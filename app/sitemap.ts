@@ -1,49 +1,84 @@
 import { MetadataRoute } from 'next'
+import { CITIES_ROMANIA } from '../lib/cities-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ecalc.ro'
-  const year = 2026
+  const years = [2024, 2025, 2026]
 
-  // 1. SALARII - Toate variațiile de căutare (Net, Brut, Euro, IT, Minim)
-  const salaryRanges = [
-    ...Array.from({ length: 20 }, (_, i) => (i + 1) * 1000), // 1000, 2000... 20000 lei
-    3700, 4050, 4325, 4850, 5500, 10000, 12000 // Praguri critice & minim
-  ];
+  // 1. Rutele de bază și Calculatoarele principale pentru toți anii
+  const coreRoutes = years.flatMap(year => [
+    `/calculator-salarii-pro/${year}`,
+    `/calculator-pfa/${year}`,
+    `/decision-maker/${year}`,
+    `/calculator-concediu-medical/${year}`,
+    `/calculator-impozit-auto/${year}`,
+    `/calculator-imobiliare-pro/${year}`,
+    `/calculator-efactura/${year}`,
+    `/calculator-compensatii-zboruri/${year}`,
+    `/zile-lucratoare/${year}`,
+    `/zile-libere/${year}`
+  ]).concat(['', '/vreme']).map(route => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date()
+  }))
 
-  const salaryPages = [
-    ...salaryRanges.map(s => `salariu-brut-${s}-lei`),
-    ...salaryRanges.map(s => `salariu-net-${s}-lei`),
-    'salariu-minim-pe-economie-2026',
-    'salariu-minim-constructii-2026',
-    'salariu-minim-agricultura-2026',
-    'calcul-salariu-it-peste-10000-lei',
-    'salariu-1000-euro-net-in-lei',
-    'salariu-2000-euro-net-in-lei',
-    'calculator-taxe-pfa-vs-srl-2026',
-    'expert-calcul-venit-net-pfa'
-  ].map(slug => ({ url: `${baseUrl}/calculator-salarii-pro/${year}/${slug}`, lastModified: new Date() }));
+  // 2. SALARII - Generare PROGRAMATICĂ a link-urilor (Masiv)
+  // Generăm link-uri din 100 în 100 RON între 3700 și 20000
+  const salarySteps = []
+  for (let s = 3700; s <= 20000; s += 100) {
+    salarySteps.push(s)
+  }
+  // Adăugăm sume fixe/rotunde importante
+  const fixedSalaries = [1000, 4050, 4325, 4850, 5500, 10000, 15000, 20000]
+  const allSalaryValues = Array.from(new Set([...salarySteps, ...fixedSalaries])).sort((a, b) => a - b)
 
-  // 2. METEO - Toate orașele, stațiunile și punctele cheie din RO
-  const locations = [
-    // Resedințe și orașe (Top 50)
-    'bucuresti', 'cluj-napoca', 'timisoara', 'iasi', 'constanta', 'craiova', 'brasov', 'galati', 'ploiesti', 'oradea', 'braila', 'arad', 'pitesti', 'sibiu', 'bacau', 'targu-mures', 'baia-mare', 'buzau', 'botosani', 'satu-mare', 'ramnicu-valcea', 'suceava', 'piatra-neamt', 'targu-jiu', 'targoviste', 'focsani', 'bistrita', 'resita', 'tulcea', 'slatina', 'calarasi', 'giurgiu', 'alba-iulia', 'deva', 'hunedoara', 'zalau', 'sfantu-gheorghe', 'slobozia', 'alexandria', 'voluntari', 'lugoj', 'medias', 'turda', 'roman', 'pascani', 'onesti', 'sighetu-marmatiei', 'mangalia', 'navodari',
-    // Litoral (Fiecare plajă)
+  const salaryPages = years.flatMap(year =>
+    allSalaryValues.flatMap(val => [
+      { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-brut-${val}-lei`, lastModified: new Date() },
+      { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-net-${val}-lei`, lastModified: new Date() }
+    ])
+  )
+
+  // Rute specifice SEO Salariu Minim
+  const specificSalarySEO = years.flatMap(year => [
+    { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-pe-economie-${year}`, lastModified: new Date() },
+    { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-constructii-${year}`, lastModified: new Date() },
+    { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-agricultura-${year}`, lastModified: new Date() }
+  ])
+
+  // 3. METEO - Toate cele 320 orașe din bază
+  const locations = CITIES_ROMANIA.map(city => {
+    // Normalizare slug: "Alba Iulia" -> "alba-iulia"
+    const slug = city.name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Scoate diacriticele
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+
+    return {
+      url: `${baseUrl}/vreme/${slug}`,
+      lastModified: new Date()
+    }
+  })
+
+  // Adăugăm și locațiile speciale (stațiuni/aeroporturi) care s-ar putea să nu fie în CITIES_ROMANIA
+  const specialLocations = [
     'mamaia', 'costinesti', 'vama-veche', 'neptun', 'olimp', 'jupiter', 'venus', 'saturn', 'eforie-nord', 'eforie-sud', '2-mai', 'corbu', 'tuzla',
-    // Munte & Schi
     'sinaia', 'predeal', 'busteni', 'azuga', 'poiana-brasov', 'paltinis', 'straja', 'ranca', 'vatra-dornei', 'cavnic', 'balea-lac', 'voineasa', 'durau', 'arieseni', 'semenic', 'cota-2000-sinaia',
-    // Balneo
     'baile-felix', 'baile-herculane', 'sovata', 'covasna', 'calimanesti', 'caciulata', 'baile-olanesti', 'slanic-moldova', 'borsec', 'praid', 'baile-tusnad', 'ocna-sibiului',
-    // Interes Special
     'aeroport-otopeni', 'aeroport-cluj', 'aeroport-timisoara', 'delta-dunarii', 'transfagarasan'
-  ].map(city => ({ url: `${baseUrl}/vreme/${city}`, lastModified: new Date() }));
+  ].map(slug => ({
+    url: `${baseUrl}/vreme/${slug}`,
+    lastModified: new Date()
+  }))
 
-  // 3. Rutele de bază
-  const coreRoutes = [
-    '', '/calculator-salarii-pro/2026', '/calculator-pfa/2026', '/decision-maker/2026',
-    '/calculator-concediu-medical/2026', '/calculator-impozit-auto/2026', 
-    '/calculator-imobiliare-pro/2026', '/calculator-efactura/2026', '/calculator-compensatii-zboruri/2026',
-    '/vreme'
-  ].map(route => ({ url: `${baseUrl}${route}`, lastModified: new Date() }));
-
-  return [...coreRoutes, ...salaryPages, ...locations];
+  // Combinăm tot (Total estimat: ~4000-5000 link-uri)
+  return [
+    ...coreRoutes,
+    ...salaryPages,
+    ...specificSalarySEO,
+    ...locations,
+    ...specialLocations
+  ]
 }
