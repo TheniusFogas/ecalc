@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/admin-pro/',
     },
-    // Folosim o cale relativa sau domeniul de test pana se propaga celalalt
-    sitemap: 'https://calc.visualagency.ro/sitemap.xml',
+    // URL oficial Sitemap
+    sitemap: 'https://ecalc.ro/sitemap.xml',
   }
 }
