@@ -8,11 +8,11 @@ export default function Footer() {
   return (
     <footer className="py-8 px-4 border-t border-slate-200 bg-white mt-auto">
       <div className="container mx-auto">
-        <div className="grid md:grid-cols-4 gap-6 text-sm mb-6">
+        <div className="grid md:grid-cols-5 gap-6 text-sm mb-6">
           <div>
             <h3 className="font-bold text-slate-900 mb-3">eCalc.ro</h3>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Calculatoare fiscale profesionale pentru România. 
+              Calculatoare fiscale profesionale pentru România.
               Informațiile sunt orientative și nu înlocuiesc consultanța fiscală.
             </p>
           </div>
@@ -27,6 +27,27 @@ export default function Footer() {
               </Link>
               <Link href={`/decision-maker/${currentYear}`} className="block text-slate-600 hover:text-blue-700 text-xs font-medium">
                 Decision Maker
+              </Link>
+            </div>
+          </nav>
+          <nav aria-label="Salarii Minime pe Sectoare">
+            <h3 className="font-bold text-slate-900 mb-3">Salarii Minime {currentYear}</h3>
+            <div className="space-y-1.5">
+              <Link href={`/calculator-salarii-pro/${currentYear}/minim-standard`} className="block text-slate-600 hover:text-blue-700 text-xs font-medium flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-2"></span>
+                Minim Standard
+              </Link>
+              <Link href={`/calculator-salarii-pro/${currentYear}/minim-constructii`} className="block text-slate-600 hover:text-blue-700 text-xs font-medium flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mr-2"></span>
+                Minim Construcții
+              </Link>
+              <Link href={`/calculator-salarii-pro/${currentYear}/minim-agricultura`} className="block text-slate-600 hover:text-blue-700 text-xs font-medium flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2"></span>
+                Minim Agricultură
+              </Link>
+              <Link href={`/calculator-salarii-pro/${currentYear}/minim-it`} className="block text-slate-600 hover:text-blue-700 text-xs font-medium flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2"></span>
+                Minim IT
               </Link>
             </div>
           </nav>

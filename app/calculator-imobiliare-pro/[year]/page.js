@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Home, Calculator, TrendingUp, Wallet, Building, CreditCard, Info, Download, Share2, PiggyBank, BarChart3, RotateCcw } from 'lucide-react';
+import { Home, Calculator, TrendingUp, Wallet, Building, CreditCard, Info, Share2, PiggyBank, BarChart3, RotateCcw, Facebook, Instagram } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,24 +17,24 @@ import Footer from '@/components/Footer';
 export default function RealEstateCalculatorPage() {
   const params = useParams();
   const year = parseInt(params?.year) || 2026;
-  
+
   const [fiscalRules, setFiscalRules] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('yield');
-  
+
   // Yield Inputs
   const [propertyValue, setPropertyValue] = useState('');
   const [monthlyRent, setMonthlyRent] = useState('');
   const [propertyTax, setPropertyTax] = useState('500');
   const [maintenanceCost, setMaintenanceCost] = useState('');
   const [insuranceCost, setInsuranceCost] = useState('300');
-  
+
   // Mortgage Inputs
   const [downPayment, setDownPayment] = useState('');
   const [mortgageRate, setMortgageRate] = useState('7.5');
   const [mortgageYears, setMortgageYears] = useState('25');
   const [mortgageType, setMortgageType] = useState('anuitate');
-  
+
   // Results
   const [yieldResult, setYieldResult] = useState(null);
   const [mortgageResult, setMortgageResult] = useState(null);
@@ -82,7 +82,7 @@ export default function RealEstateCalculatorPage() {
 
     const calculator = new RealEstateCalculator(fiscalRules);
     const loanAmount = parseFloat(propertyValue) - parseFloat(downPayment);
-    
+
     const result = calculator.simulateMortgage({
       loanAmount,
       annualRate: parseFloat(mortgageRate),
@@ -100,7 +100,7 @@ export default function RealEstateCalculatorPage() {
     }
 
     const calculator = new RealEstateCalculator(fiscalRules);
-    
+
     const result = calculator.analyzeInvestment({
       propertyValue: parseFloat(propertyValue),
       downPayment: parseFloat(downPayment),
@@ -124,6 +124,29 @@ export default function RealEstateCalculatorPage() {
     }).format(value);
   };
 
+  const shareToSocial = (platform) => {
+    const url = window.location.href;
+    const text = encodeURIComponent(`Calcul rentabilitate imobiliară pe eCalc.ro! #imobiliare #investitii #romania`);
+
+    switch (platform) {
+      case 'facebook':
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.split('#')[0])}`;
+        window.open(fbUrl, '_blank', 'width=600,height=400,noopener,noreferrer');
+        break;
+      case 'x':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${text}`, '_blank', 'width=600,height=400');
+        break;
+      case 'instagram':
+      case 'tiktok':
+        navigator.clipboard.writeText(url);
+        toast.success(`Link copiat! Poți să-l adaugi acum în Story pe ${platform === 'instagram' ? 'Instagram' : 'TikTok'}`);
+        break;
+      default:
+        navigator.clipboard.writeText(url);
+        toast.success('Link copiat în clipboard!');
+    }
+  };
+
   const shareCalculation = () => {
     const params = new URLSearchParams({
       value: propertyValue,
@@ -133,7 +156,7 @@ export default function RealEstateCalculatorPage() {
     });
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(url);
-    toast.success('Link copiat în clipboard!');
+    toast.success('Link calcul copiat în clipboard!');
   };
 
   if (loading) {
@@ -153,21 +176,44 @@ export default function RealEstateCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
       <NavigationHeader />
-      
+
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Calculator Imobiliare Pro {year}</h1>
             <p className="text-sm text-slate-600">Randament • Credit Ipotecar • Cash-on-Cash • Analiză Investiție</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={shareCalculation}>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => {
+              setPropertyValue('');
+              setMonthlyRent('');
+              setDownPayment('');
+              setYieldResult(null);
+              setMortgageResult(null);
+              setInvestmentResult(null);
+              toast.success('Calculator resetat');
+            }} disabled={!yieldResult && !mortgageResult && !investmentResult}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+
+            {/* Social Sharing */}
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('facebook')} disabled={!yieldResult && !mortgageResult && !investmentResult} className="hover:text-blue-600 border-slate-200">
+              <Facebook className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('x')} className="hover:text-slate-900 border-slate-200">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('instagram')} disabled={!yieldResult && !mortgageResult && !investmentResult} className="hover:text-pink-600 border-slate-200">
+              <Instagram className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('tiktok')} disabled={!yieldResult && !mortgageResult && !investmentResult} className="hover:text-slate-900 border-slate-200">
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.32h0q2.73,12,8.14,23.36a121.25,121.25,0,0,0,103,63.18v90.41l-.11,210.64h0Z"></path></svg>
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={shareCalculation} disabled={!yieldResult && !mortgageResult && !investmentResult}>
               <Share2 className="h-4 w-4 mr-1" />
               Distribuie
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-1" />
-              PDF
             </Button>
           </div>
         </div>
@@ -606,11 +652,10 @@ export default function RealEstateCalculatorPage() {
                           <td className="p-3 text-right">{data.avgPrice} €</td>
                           <td className="p-3 text-right">{data.avgRent} €</td>
                           <td className="p-3 text-right">
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                              data.yield > 6.5 ? 'bg-green-100 text-green-800' :
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${data.yield > 6.5 ? 'bg-green-100 text-green-800' :
                               data.yield > 6 ? 'bg-amber-100 text-amber-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                                'bg-red-100 text-red-800'
+                              }`}>
                               {data.yield}%
                             </span>
                           </td>

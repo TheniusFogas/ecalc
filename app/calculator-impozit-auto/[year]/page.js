@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Car, Calculator, MapPin, Fuel, Shield, Settings, Info, Download, Share2, TrendingDown, Zap, RotateCcw } from 'lucide-react';
+import { Car, Calculator, MapPin, Fuel, Shield, Settings, Info, Download, Share2, TrendingDown, Zap, RotateCcw, Facebook, Instagram } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,17 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { CarTaxCalculator, VEHICLE_TYPES, LOCATION_COEFFICIENTS, EURO_NORMS, FUEL_TYPES } from '@/lib/car-tax-calculator';
+import { generateCarTaxPDF } from '@/lib/pdf-export';
 import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
 
 export default function CarTaxCalculatorPage() {
   const params = useParams();
   const year = parseInt(params?.year) || 2026;
-  
+
   const [fiscalRules, setFiscalRules] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('calculator');
-  
+
   // Inputs
   const [engineCC, setEngineCC] = useState('');
   const [vehicleType, setVehicleType] = useState('autoturism');
@@ -30,12 +31,12 @@ export default function CarTaxCalculatorPage() {
   const [location, setLocation] = useState('bucurești');
   const [registrationYear, setRegistrationYear] = useState(new Date().getFullYear().toString());
   const [purchasePrice, setPurchasePrice] = useState('');
-  
+
   // TCO inputs
   const [kmPerYear, setKmPerYear] = useState('15000');
   const [fuelPrice, setFuelPrice] = useState('7.5');
   const [consumption, setConsumption] = useState('8');
-  
+
   // Results
   const [result, setResult] = useState(null);
   const [tcoResult, setTcoResult] = useState(null);
@@ -112,6 +113,29 @@ export default function CarTaxCalculatorPage() {
     }).format(value);
   };
 
+  const shareToSocial = (platform) => {
+    const url = window.location.href;
+    const text = encodeURIComponent(`Vezi calculul impozitului auto pe eCalc.ro! #auto #impozit #romania`);
+
+    switch (platform) {
+      case 'facebook':
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.split('#')[0])}`;
+        window.open(fbUrl, '_blank', 'width=600,height=400,noopener,noreferrer');
+        break;
+      case 'x':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${text}`, '_blank', 'width=600,height=400');
+        break;
+      case 'instagram':
+      case 'tiktok':
+        navigator.clipboard.writeText(url);
+        toast.success(`Link copiat! Poți să-l adaugi acum în Story pe ${platform === 'instagram' ? 'Instagram' : 'TikTok'}`);
+        break;
+      default:
+        navigator.clipboard.writeText(url);
+        toast.success('Link copiat în clipboard!');
+    }
+  };
+
   const shareCalculation = () => {
     const params = new URLSearchParams({
       cc: engineCC,
@@ -121,7 +145,31 @@ export default function CarTaxCalculatorPage() {
     });
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(url);
-    toast.success('Link copiat în clipboard!');
+    toast.success('Link calcul copiat în clipboard!');
+  };
+
+  const downloadPDF = () => {
+    if (!result) {
+      toast.error('Calculați mai întâi impozitul');
+      return;
+    }
+
+    try {
+      generateCarTaxPDF(result, year);
+      toast.success('PDF descărcat cu succes');
+    } catch (error) {
+      toast.error('Eroare la generarea PDF-ului');
+      console.error(error);
+    }
+  };
+
+  const resetForm = () => {
+    setEngineCC('');
+    setPurchasePrice('');
+    setResult(null);
+    setTcoResult(null);
+    setComparisonResult(null);
+    toast.success('Formular resetat');
   };
 
   if (loading) {
@@ -141,19 +189,38 @@ export default function CarTaxCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       <NavigationHeader />
-      
+
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Calculator Impozit Auto {year}</h1>
             <p className="text-sm text-slate-600">Capacitate • Tip Vehicul • Coeficient Regional • TCO</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={shareCalculation}>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={resetForm} disabled={!result}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+
+            {/* Social Sharing */}
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('facebook')} disabled={!result} className="hover:text-blue-600 border-slate-200">
+              <Facebook className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('x')} disabled={!result} className="hover:text-slate-900 border-slate-200">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('instagram')} disabled={!result} className="hover:text-pink-600 border-slate-200">
+              <Instagram className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('tiktok')} disabled={!result} className="hover:text-slate-900 border-slate-200">
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.32h0q2.73,12,8.14,23.36a121.25,121.25,0,0,0,103,63.18v90.41l-.11,210.64h0Z"></path></svg>
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={shareCalculation} disabled={!result}>
               <Share2 className="h-4 w-4 mr-1" />
               Distribuie
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={downloadPDF} disabled={!result}>
               <Download className="h-4 w-4 mr-1" />
               PDF
             </Button>
@@ -595,14 +662,12 @@ export default function CarTaxCalculatorPage() {
                       {comparisonResult.results.map((loc, index) => (
                         <div
                           key={loc.location}
-                          className={`flex justify-between items-center p-3 rounded-lg ${
-                            index === 0 ? 'bg-green-100 border-2 border-green-400' : 'bg-slate-50'
-                          }`}
+                          className={`flex justify-between items-center p-3 rounded-lg ${index === 0 ? 'bg-green-100 border-2 border-green-400' : 'bg-slate-50'
+                            }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                              index === 0 ? 'bg-green-500 text-white' : 'bg-slate-200'
-                            }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${index === 0 ? 'bg-green-500 text-white' : 'bg-slate-200'
+                              }`}>
                               {index + 1}
                             </div>
                             <div>

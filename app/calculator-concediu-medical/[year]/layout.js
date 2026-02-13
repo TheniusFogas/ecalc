@@ -1,16 +1,7 @@
-const currentYear = new Date().getFullYear();
-
-export async function generateMetadata({ params }) {
-  const year = params.year || currentYear;
-
-  return {
-    title: `Calculator Concediu Medical ${year} - Calcul Indemnizație Netă`,
-    description: `Calculează valoarea indemnizației pentru concediu medical în ${year}. Află câți bani primești în funcție de codul de indemnizație și stagiul de cotizare.`,
-    alternates: { 
-      canonical: '/concediu-medical' 
-    }
-  };
-}
+export const metadata = {
+  title: 'Calculator Concediu Medical 2025 - Indemnizație Netă',
+  description: 'Calculează indemnizația pentru concediu medical în 2025 conform OUG 158/2005. Include toate codurile de indemnizație.',
+};
 
 export default function Layout({ children }) {
   return <>{children}</>;

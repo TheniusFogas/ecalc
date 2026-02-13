@@ -1,0 +1,8 @@
+--- TEST DEDUCERE PERSONALA (Salariu Minim 4050 RON) ---
+1. Deducere Standard (510 RON):
+   Venit Impozabil: 1927
+   Impozit pe Venit: 193 RON
+2. Deducere Zero (0 RON):
+   Venit Impozabil: 2437
+   Impozit pe Venit: 244 RON
+✅ TEST PASSED: Impozitul a crescut de la 193 la 244 RON când deducerea a fost setată pe 0.

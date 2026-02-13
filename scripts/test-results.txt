@@ -1,0 +1,15 @@
+﻿--- START EXPANDED SANDBOX VERIFICATION ---
+1. IT 10k: PASSED (Net: 6500)
+2. Testing Overtaxing (Standard)...
+- Status: PASSED
+- Message: "Atentie: Taxele sunt calculate la nivelul salariului minim pe economie."
+- CAS: 938 (Expected ~938 if based on MinSalary)
+3. Testing Overtaxing (Construction)...
+- Status: PASSED (Net: 2662)
+- Message: "Atentie: Taxele sunt calculate la nivelul salariului minim pe economie."
+4. Testing Binary Search stability at Low Income...
+- Target Net 1000 -> Gross: 1376.99 (Net Actual: 999.9912719726562)
+- Binary Search Stability: PASSED
+5. Testing Default Rules Fallback...
+- Default CAS Rate: 25% (Expected 25) - PASSED
+--- END VERIFICATION ---

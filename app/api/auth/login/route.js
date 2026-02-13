@@ -27,16 +27,21 @@ async function connectToDatabase() {
 // Initialize admin users
 async function initializeAdminUser(db) {
   const adminUsers = db.collection('adminUsers');
-  const existingAdmin = await adminUsers.findOne({ email: process.env.ADMIN_EMAIL });
-  
-  if (!existingAdmin) {
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin2026!', 10);
-    await adminUsers.insertOne({
-      email: process.env.ADMIN_EMAIL || 'admin@ecalc.ro',
-      password: hashedPassword,
-      createdAt: new Date(),
-    });
-  }
+  const email = process.env.ADMIN_EMAIL || 'admin@ecalc.ro';
+  const password = process.env.ADMIN_PASSWORD || 'Admin2026!';
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Use updateOne with upsert to ensure DB always matches .env
+  await adminUsers.updateOne(
+    { email },
+    {
+      $set: {
+        password: hashedPassword,
+        updatedAt: new Date()
+      }
+    },
+    { upsert: true }
+  );
 }
 
 // POST /api/auth/login
@@ -44,7 +49,7 @@ export async function POST(request) {
   try {
     const { db } = await connectToDatabase();
     await initializeAdminUser(db);
-    
+
     const body = await request.json();
     const { email, password } = body;
 
@@ -60,10 +65,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Credențiale invalide' }, { status: 401 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       token: 'admin-token-' + uuidv4(),
-      email: admin.email 
+      email: admin.email
     });
   } catch (error) {
     console.error('Error logging in:', error);

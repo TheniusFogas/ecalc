@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedYear, setSelectedYear] = useState(2026);
@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState({});
   const [leads, setLeads] = useState([]);
   const [holidays, setHolidays] = useState([]);
-  const [newHoliday, setNewHoliday] = useState({ date: '', name: '', type: 'legal' });
+  const [newHoliday, setNewHoliday] = useState({ date: '', name: '', description: '', type: 'legal' });
   const [activeTab, setActiveTab] = useState('fiscal');
   const [activeModule, setActiveModule] = useState('salary');
   const [loading, setLoading] = useState(false);
@@ -84,9 +84,9 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fiscalRules),
       });
-      
+
       const result = await response.json();
-      
+
       if (response.ok) {
         toast.success(`Reguli fiscale ${selectedYear} actualizate cu succes!`);
         // Reload data to confirm persistence
@@ -126,19 +126,19 @@ export default function AdminDashboard() {
       toast.error('Completați data și numele sărbătorii');
       return;
     }
-    
+
     // Verifică dacă data există deja
     if (holidays.some(h => h.date === newHoliday.date)) {
       toast.error('Această dată există deja în listă');
       return;
     }
-    
-    const updatedHolidays = [...holidays, { ...newHoliday }].sort((a, b) => 
+
+    const updatedHolidays = [...holidays, { ...newHoliday }].sort((a, b) =>
       new Date(a.date) - new Date(b.date)
     );
-    
+
     setHolidays(updatedHolidays);
-    setNewHoliday({ date: '', name: '', type: 'legal' });
+    setNewHoliday({ date: '', name: '', description: '', type: 'legal' });
     toast.success('Sărbătoare adăugată (nu uitați să salvați!)');
   };
 
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ holidays }),
       });
-      
+
       if (response.ok) {
         toast.success(`Sărbătorile pentru ${selectedYear} au fost salvate!`);
       } else {
@@ -247,21 +247,30 @@ export default function AdminDashboard() {
               <p className="text-sm text-slate-600">Management complet reguli fiscale & conținut</p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-semibold">Anul fiscal:</Label>
-                <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2025">2025</SelectItem>
-                    <SelectItem value="2026">2026</SelectItem>
-                    <SelectItem value="2027">2027</SelectItem>
-                    <SelectItem value="2028">2028</SelectItem>
-                    <SelectItem value="2029">2029</SelectItem>
-                    <SelectItem value="2030">2030</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm font-semibold flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    Dată Vigoare:
+                  </Label>
+                  {/* ADMIN SNAPSHOT SELECTOR */}
+                  <Input
+                    type="date"
+                    className="w-40 bg-white"
+                    value={fiscalRules?.effectiveDate || `${selectedYear}-01-01`}
+                    onChange={(e) => {
+                      const date = e.target.value;
+                      const year = parseInt(date.split('-')[0]);
+                      setSelectedYear(year);
+                      // Update local state immediately for UI responsiveness
+                      setFiscalRules(prev => ({ ...prev, effectiveDate: date, year: year }));
+                    }}
+                  />
+                  <div className="text-xs text-slate-500 flex flex-col">
+                    <span className="font-bold text-blue-700">Mod: SNAPSHOT</span>
+                    <span>Salvarea creează o nouă versiune.</span>
+                  </div>
+                </div>
               </div>
               <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
                 Logout
@@ -427,13 +436,25 @@ export default function AdminDashboard() {
                         </div>
                         <div className="grid md:grid-cols-3 gap-4">
                           <div>
-                            <Label>Deducere Bază Maximă (RON)</Label>
+                            <Label className="text-blue-700 font-bold">Procent Deducere (%)</Label>
                             <Input
                               type="number"
-                              value={fiscalRules.salary.personal_deduction_base || 510}
-                              onChange={(e) => updateFiscalField('salary', 'personal_deduction_base', parseFloat(e.target.value))}
+                              value={fiscalRules.salary.personal_deduction_percent || 0}
+                              onChange={(e) => updateFiscalField('salary', 'personal_deduction_percent', parseFloat(e.target.value))}
+                              className="border-blue-300 bg-blue-50"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Valoare maximă pentru salarii ≤ SalMin</p>
+                            <p className="text-xs text-blue-600 mt-1">
+                              Setează procentul din Salariul Minim (ex: 20)
+                            </p>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+                            <Label className="text-slate-500">Deducere Aplicată (Real-Time)</Label>
+                            <div className="text-lg font-bold text-slate-800 mt-1">
+                              {Math.round((fiscalRules.salary.minimum_salary || 0) * ((fiscalRules.salary.personal_deduction_percent || 0) / 100))} RON
+                            </div>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              = {fiscalRules.salary.minimum_salary} (Min) x {fiscalRules.salary.personal_deduction_percent}%
+                            </p>
                           </div>
                           <div>
                             <Label>Prag Regresiv (RON)</Label>
@@ -548,6 +569,23 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
+                      {/* Visibility & UI Options */}
+                      <div className="border-t pt-4">
+                        <h3 className="font-semibold mb-4">Vizibilitate & UI</h3>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={fiscalRules.salary.show_year_comparison !== false}
+                            onChange={(e) => updateFiscalField('salary', 'show_year_comparison', e.target.checked)}
+                            className="h-4 w-4"
+                          />
+                          <Label>Afișează Comparație An Precedent (2025 vs 2026)</Label>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1 ml-6">
+                          Dacă este debifat, secțiunea "Comparație 2025 vs 2026" va fi ascunsă din calculator.
+                        </p>
+                      </div>
+
                       {/* Sume Netaxabile și Beneficii */}
                       <div className="border-t pt-4">
                         <h3 className="font-semibold mb-4">Sume Netaxabile & Beneficii</h3>
@@ -566,9 +604,10 @@ export default function AdminDashboard() {
                           </div>
                           <div>
                             <Label>Sumă Netaxabilă (RON/lună)</Label>
+                            <Label>Sumă Netaxabilă (RON/lună)</Label>
                             <Input
                               type="number"
-                              value={fiscalRules.salary.untaxed_amount || 300}
+                              value={fiscalRules.salary.untaxed_amount !== undefined ? fiscalRules.salary.untaxed_amount : 300}
                               onChange={(e) => updateFiscalField('salary', 'untaxed_amount', parseFloat(e.target.value))}
                               disabled={!fiscalRules.salary.untaxed_amount_enabled}
                             />
@@ -696,6 +735,15 @@ export default function AdminDashboard() {
                             <p className="text-xs text-slate-500 mt-1">Scutire IV pentru primii X RON (10000 în 2026)</p>
                           </div>
                           <div>
+                            <Label>Salariu Minim IT (RON/lună)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_it || 4050}
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_it', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în sectorul IT</p>
+                          </div>
+                          <div>
                             <Label className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -742,6 +790,15 @@ export default function AdminDashboard() {
                             <p className="text-xs text-slate-500 mt-1">Scutire IV pentru construcții similar IT</p>
                           </div>
                           <div>
+                            <Label>Salariu Minim Construcții (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_construction || 4582}
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_construction', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în construcții</p>
+                          </div>
+                          <div>
                             <Label>CAS Agricultură (%)</Label>
                             <Input
                               type="number"
@@ -762,6 +819,15 @@ export default function AdminDashboard() {
                               Scutire IV Agricultură
                             </Label>
                             <p className="text-xs text-slate-500 mt-1">Scutire IV pentru agricultură</p>
+                          </div>
+                          <div>
+                            <Label>Salariu Minim Agricultură (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_agriculture || 3436}
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_agriculture', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în agricultură</p>
                           </div>
                         </div>
                         <div className="bg-green-50 border border-green-200 p-3 rounded-lg mt-3">
@@ -1057,6 +1123,15 @@ export default function AdminDashboard() {
                               onChange={(e) => updateFiscalField('pfa', 'norm_limit_eur', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">Venit maxim pentru normă (25.000 EUR)</p>
+                          </div>
+                          <div>
+                            <Label>Impozit Dividende (%)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.pfa.dividend_tax_rate || 8}
+                              onChange={(e) => updateFiscalField('pfa', 'dividend_tax_rate', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Taxa pe dividende SRL (Standard 8%)</p>
                           </div>
                         </div>
                       </div>
@@ -1572,6 +1647,14 @@ export default function AdminDashboard() {
                       placeholder="Ex: Ziua Națională"
                     />
                   </div>
+                  <div className="md:col-span-2">
+                    <Label>Descriere (Opțional)</Label>
+                    <Input
+                      value={newHoliday.description || ''}
+                      onChange={(e) => setNewHoliday({ ...newHoliday, description: e.target.value })}
+                      placeholder="Detalii suplimentare..."
+                    />
+                  </div>
                   <div>
                     <Label>Tip</Label>
                     <Select value={newHoliday.type} onValueChange={(v) => setNewHoliday({ ...newHoliday, type: v })}>
@@ -1601,17 +1684,17 @@ export default function AdminDashboard() {
                       Salvează Toate
                     </Button>
                   </div>
-                  
+
                   {holidays.length > 0 ? (
                     <div className="divide-y">
                       {holidays.map((holiday, index) => {
                         const date = new Date(holiday.date);
-                        const formattedDate = date.toLocaleDateString('ro-RO', { 
-                          weekday: 'long', 
-                          day: 'numeric', 
-                          month: 'long' 
+                        const formattedDate = date.toLocaleDateString('ro-RO', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long'
                         });
-                        
+
                         return (
                           <div key={index} className="flex items-center justify-between py-3 hover:bg-slate-50 px-2 rounded">
                             <div className="flex items-center gap-4">
@@ -1621,18 +1704,20 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <div className="font-medium">{holiday.name}</div>
-                                <div className="text-sm text-slate-500">{formattedDate}</div>
+                                {holiday.description && (
+                                  <div className="text-xs text-slate-500 italic truncate max-w-[200px]">{holiday.description}</div>
+                                )}
+                                <div className="text-sm text-slate-400">{formattedDate}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                holiday.type === 'legal' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
-                              }`}>
+                              <span className={`px-2 py-1 rounded text-xs ${holiday.type === 'legal' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+                                }`}>
                                 {holiday.type === 'legal' ? 'Legal' : 'Companie'}
                               </span>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => removeHoliday(holiday.date)}
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
                               >
@@ -1790,6 +1875,6 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </div >
   );
 }

@@ -1,0 +1,18 @@
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+'yarn' is not recognized as an internal or external command,
+operable program or batch file.
+Error: You cannot use different slug names for the same dynamic path ('path' !== 'slug').
+    at handleSlug (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:94:31)
+    at UrlNode._insert (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:131:17)
+    at UrlNode._insert (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:142:40)
+    at UrlNode._insert (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:142:40)
+    at UrlNode.insert (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:13:14)
+    at C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:165:46
+    at Array.forEach (<anonymous>)
+    at getSortedRoutes (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js:165:21)
+    at Watchpack.<anonymous> (C:\Users\40768\.gemini\antigravity\scratch\ecalcOLD\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js:558:65)
+[?25h

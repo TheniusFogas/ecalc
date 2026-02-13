@@ -1,0 +1,11 @@
+--- TESTUL DE "0" (Deducere = 0 RON) ---
+Salariu Brut: 4050 RON
+Deducere Personală: 0 RON
+Impozit pe Venit: 244 RON
+✅ TEST "0" REUȘIT: Impozitul este fix 244 RON.
+
+--- TESTUL DE "REVENIRE" (Deducere = 810 RON) ---
+Salariu Brut: 4050 RON
+Deducere Personală: 810 RON
+Impozit pe Venit: 163 RON
+✅ TEST "REVENIRE" REUȘIT: Impozitul a scăzut la 163 RON.

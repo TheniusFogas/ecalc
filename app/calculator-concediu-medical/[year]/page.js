@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Calculator, Stethoscope, Calendar, Building2, Heart, Info, Download, Share2, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
+import { Calculator, Stethoscope, Calendar, Building2, Heart, Info, Share2, Download, AlertCircle, CheckCircle, RotateCcw, Facebook, Instagram } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,28 +11,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { MedicalLeaveCalculator, SICK_CODES, generateSalaryHistory } from '@/lib/medical-leave-calculator';
+import { generateGenericPDF } from '@/lib/pdf-export';
 import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
-import { generateGenericPDF } from '@/lib/pdf-export';
+
 
 export default function MedicalLeaveCalculatorPage() {
   const params = useParams();
   const year = parseInt(params?.year) || 2026;
-  
+
   const [fiscalRules, setFiscalRules] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('calculator');
-  
+
   // Inputs
   const [sickCode, setSickCode] = useState('01');
   const [days, setDays] = useState('');
   const [averageSalary, setAverageSalary] = useState('');
   const [monthsContributed, setMonthsContributed] = useState('12');
-  
+
   // Maternity
   const [prenatalDays, setPrenatalDays] = useState('63');
   const [postnatalDays, setPostnatalDays] = useState('63');
-  
+
   // Results
   const [result, setResult] = useState(null);
   const [maternityResult, setMaternityResult] = useState(null);
@@ -94,6 +95,29 @@ export default function MedicalLeaveCalculatorPage() {
     }).format(value);
   };
 
+  const shareToSocial = (platform) => {
+    const url = window.location.href;
+    const text = encodeURIComponent(`Vezi calculul concediului medical pe eCalc.ro! #sanatate #concediu #romania`);
+
+    switch (platform) {
+      case 'facebook':
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.split('#')[0])}`;
+        window.open(fbUrl, '_blank', 'width=600,height=400,noopener,noreferrer');
+        break;
+      case 'x':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${text}`, '_blank', 'width=600,height=400');
+        break;
+      case 'instagram':
+      case 'tiktok':
+        navigator.clipboard.writeText(url);
+        toast.success(`Link copiat! Poți să-l adaugi acum în Story pe ${platform === 'instagram' ? 'Instagram' : 'TikTok'}`);
+        break;
+      default:
+        navigator.clipboard.writeText(url);
+        toast.success('Link copiat în clipboard!');
+    }
+  };
+
   const shareCalculation = () => {
     const params = new URLSearchParams({
       code: sickCode,
@@ -103,7 +127,7 @@ export default function MedicalLeaveCalculatorPage() {
     });
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(url);
-    toast.success('Link copiat în clipboard!');
+    toast.success('Link calcul copiat în clipboard!');
   };
 
   const downloadPDF = () => {
@@ -111,18 +135,18 @@ export default function MedicalLeaveCalculatorPage() {
       toast.error('Calculați mai întâi indemnizația');
       return;
     }
-    
+
     try {
       const data = {
         'Cod concediu': `${sickCode} - ${result.sickInfo?.name || 'Boală obișnuită'}`,
         'Zile concediu': result.days || 0,
-        'Salariu mediu brut': `${formatCurrency(result.averageSalary || 0)} RON`,
-        'Indemnizație brută': `${formatCurrency(result.grossIndemnity || 0)} RON`,
-        'Indemnizație netă': `${formatCurrency(result.netIndemnity || 0)} RON`,
+        'Salariu mediu brut': result.averageSalary || 0,
+        'Indemnizație brută': result.grossIndemnity || 0,
+        'Indemnizație netă': result.netIndemnity || 0,
         'Plătitor primele 5 zile': 'Angajator',
         'Plătitor restul zilelor': result.sickInfo?.paidBy || 'CNAS',
       };
-      
+
       generateGenericPDF(`Raport Concediu Medical ${year}`, data, year);
       toast.success('PDF descărcat cu succes');
     } catch (error) {
@@ -130,6 +154,8 @@ export default function MedicalLeaveCalculatorPage() {
       console.error(error);
     }
   };
+
+
 
   if (loading) {
     return (
@@ -148,19 +174,44 @@ export default function MedicalLeaveCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
       <NavigationHeader />
-      
+
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Calculator Concediu Medical {year}</h1>
             <p className="text-sm text-slate-600">OUG 158/2005 • Toate codurile de boală • Maternitate</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={shareCalculation}>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => {
+              setResult(null);
+              setMaternityResult(null);
+              setDays('');
+              setAverageSalary('');
+              toast.success('Calculator resetat');
+            }} disabled={!result && !maternityResult}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+
+            {/* Social Sharing */}
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('facebook')} disabled={!result && !maternityResult} className="hover:text-blue-600 border-slate-200">
+              <Facebook className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('x')} disabled={!result && !maternityResult} className="hover:text-slate-900 border-slate-200">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('instagram')} disabled={!result && !maternityResult} className="hover:text-pink-600 border-slate-200">
+              <Instagram className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => shareToSocial('tiktok')} disabled={!result && !maternityResult} className="hover:text-slate-900 border-slate-200">
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.32h0q2.73,12,8.14,23.36a121.25,121.25,0,0,0,103,63.18v90.41l-.11,210.64h0Z"></path></svg>
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={shareCalculation} disabled={!result && !maternityResult}>
               <Share2 className="h-4 w-4 mr-1" />
               Distribuie
             </Button>
-            <Button variant="outline" size="sm" onClick={downloadPDF}>
+            <Button variant="outline" size="sm" onClick={downloadPDF} disabled={!result && !maternityResult}>
               <Download className="h-4 w-4 mr-1" />
               PDF
             </Button>
@@ -567,11 +618,10 @@ export default function MedicalLeaveCalculatorPage() {
                           <td className="p-3 font-mono font-bold">{code}</td>
                           <td className="p-3">{info.name}</td>
                           <td className="p-3 text-center">
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                              info.rate === 100 ? 'bg-green-100 text-green-800' :
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${info.rate === 100 ? 'bg-green-100 text-green-800' :
                               info.rate >= 85 ? 'bg-blue-100 text-blue-800' :
-                              'bg-amber-100 text-amber-800'
-                            }`}>
+                                'bg-amber-100 text-amber-800'
+                              }`}>
                               {info.rate}%
                             </span>
                           </td>

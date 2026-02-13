@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4285F4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1967D2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle with subtle gradient -->
+  <circle cx="50" cy="50" r="48" fill="white"/>
+  
+  <!-- Letter "e" in Google style with multi-color accents -->
+  <text x="50" y="72" font-family="'Product Sans', 'Google Sans', Arial, sans-serif" font-size="60" font-weight="700" text-anchor="middle" fill="url(#blueGrad)">e</text>
+  
+  <!-- Subtle accent dots in Google colors -->
+  <circle cx="82" cy="25" r="4" fill="#EA4335" opacity="0.8"/>
+  <circle cx="18" cy="75" r="4" fill="#34A853" opacity="0.8"/>
+  <circle cx="75" cy="75" r="3" fill="#FBBC04" opacity="0.8"/>
+</svg>

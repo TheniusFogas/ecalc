@@ -1,0 +1,13 @@
+--- TEST 1: IT PILON 2 OPTIONAL ---
+IT (Pilon 2 OPTIONAL - CAS should be 20.25%):
+Gross: 5000, CAS: 1013 (20.26%)
+IT (Pilon 2 MANDATORY - CAS should be 25%):
+Gross: 5000, CAS: 1250 (25.00%)
+✅ TEST PASSED: IT Pilon 2 optional correctly reduces CAS.
+
+--- TEST 2: SUPRATAXARE PART-TIME ---
+Part-Time (Suprataxare ACTIVA):
+Gross: 2000, CAS: 938, is_overtaxed: true
+Part-Time (Suprataxare INACTIVA):
+Gross: 2000, CAS: 425, is_overtaxed: false
+✅ TEST PASSED: Overtaxing toggle correctly controls engine logic.

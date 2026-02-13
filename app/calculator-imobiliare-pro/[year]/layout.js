@@ -1,11 +1,6 @@
-const currentYear = new Date().getFullYear();
-
 export const metadata = {
-  title: `Calculator Yield si Rentabilitate Imobiliara ${currentYear}`,
-  description: `Calculeaza randamentul investitiei tale imobiliare in ${currentYear}. Afla indicatorii de yield, ROI si perioada de recuperare a investitiei.`,
-  alternates: { 
-    canonical: '/yield-imobiliare' 
-  }
+  title: 'Calculator Rentabilitate Imobiliară Pro 2025',
+  description: 'Analiză completă a investițiilor imobiliare: randament, credit ipotecar, cash-on-cash și perioada de recuperare.',
 };
 
 export default function Layout({ children }) {

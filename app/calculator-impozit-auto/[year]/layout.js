@@ -1,11 +1,6 @@
-const currentYear = new Date().getFullYear();
-
 export const metadata = {
-  title: `Calculator Impozit Auto ${currentYear} - Calcul Capacitate Cilindrica`,
-  description: `Afla cat este impozitul auto in ${currentYear} conform noilor reglementari fiscale pentru masini hibride, electrice si diesel/benzina.`,
-  alternates: { 
-    canonical: '/impozit-auto' 
-  }
+  title: 'Calculator Impozit Auto 2025 - Toate Localitățile',
+  description: 'Calculați impozitul auto anual pentru orice vehicul în 2025. Include taxe pentru hibride, electrice și motoare mari.',
 };
 
 export default function Layout({ children }) {

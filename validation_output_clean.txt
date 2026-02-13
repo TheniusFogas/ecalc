@@ -1,0 +1,109 @@
+# Raport Validare Motor Salarial (Unit Test)
+
+## 1. Parametri Sectoriali (Admin Values)
+- Standard Minim: 4050 RON
+- Construcții Minim: 4582 RON
+- Agricultură Minim: 3436 RON
+- IT Minim: 4050 RON
+- Scutire Netaxabilă (untaxed_amount): 300 RON
+- Prag Scutire IT: 10000 RON
+- Curs BNR: 5.0923 RON
+
+## 2. Matricea de Testare (Cross-Check & Reciprocitate)
+
+### Scenariu: STANDARD - Sub Minim
+- Brut: 3950 RON
+- Net Calculat: 2516 RON
+- Taxe: CAS=913, CASS=365, IV=156, CAM=82
+- Ded. Pers: 810, Baza IV: 1562
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2516 -> Brut ?): 3949 RON (Diff: 1.00) -> ✅ PASS
+
+### Scenariu: STANDARD - Fix Minim
+- Brut: 4050 RON
+- Net Calculat: 2574 RON
+- Taxe: CAS=938, CASS=375, IV=163, CAM=84
+- Ded. Pers: 810, Baza IV: 1627
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2574 -> Brut ?): 4050 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: STANDARD - Peste Minim
+- Brut: 4150 RON
+- Net Calculat: 2504 RON
+- Taxe: CAS=1038, CASS=415, IV=193, CAM=93
+- Ded. Pers: 770, Baza IV: 1927
+- Scutire 300: 0 RON (✅ Scutire 300 Eliminată Correct)
+- Reciprocitate (Net 2504 -> Brut ?): 3930 RON (Diff: 220.00) -> ❌ FAIL
+
+### Scenariu: CONSTRUCTION - Sub Minim
+- Brut: 4482 RON
+- Net Calculat: 3175 RON
+- Taxe: CAS=889, CASS=418, IV=0, CAM=94
+- Ded. Pers: 635, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 3175 -> Brut ?): 4482 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: CONSTRUCTION - Fix Minim
+- Brut: 4582 RON
+- Net Calculat: 3244 RON
+- Taxe: CAS=910, CASS=428, IV=0, CAM=96
+- Ded. Pers: 595, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 3244 -> Brut ?): 4582 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: CONSTRUCTION - Peste Minim
+- Brut: 4682 RON
+- Net Calculat: 3219 RON
+- Taxe: CAS=995, CASS=468, IV=0, CAM=105
+- Ded. Pers: 554, Baza IV: 0
+- Scutire 300: 0 RON (✅ Scutire 300 Eliminată Correct)
+- Reciprocitate (Net 3219 -> Brut ?): 4546 RON (Diff: 136.00) -> ❌ FAIL
+
+### Scenariu: AGRICULTURE - Sub Minim
+- Brut: 3336 RON
+- Net Calculat: 2387 RON
+- Taxe: CAS=645, CASS=304, IV=0, CAM=68
+- Ded. Pers: 810, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2387 -> Brut ?): 3336 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: AGRICULTURE - Fix Minim
+- Brut: 3436 RON
+- Net Calculat: 2456 RON
+- Taxe: CAS=666, CASS=314, IV=0, CAM=70
+- Ded. Pers: 810, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2456 -> Brut ?): 3436 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: AGRICULTURE - Peste Minim
+- Brut: 3536 RON
+- Net Calculat: 2431 RON
+- Taxe: CAS=751, CASS=354, IV=0, CAM=79
+- Ded. Pers: 810, Baza IV: 0
+- Scutire 300: 0 RON (✅ Scutire 300 Eliminată Correct)
+- Reciprocitate (Net 2431 -> Brut ?): 3400 RON (Diff: 136.00) -> ❌ FAIL
+
+### Scenariu: IT - Sub Minim
+- Brut: 3950 RON
+- Net Calculat: 2846 RON
+- Taxe: CAS=739, CASS=365, IV=0, CAM=82
+- Ded. Pers: 810, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2846 -> Brut ?): 3950 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: IT - Fix Minim
+- Brut: 4050 RON
+- Net Calculat: 2916 RON
+- Taxe: CAS=759, CASS=375, IV=0, CAM=84
+- Ded. Pers: 810, Baza IV: 0
+- Scutire 300: 300 RON (✅ Scutire 300 Aplicată)
+- Reciprocitate (Net 2916 -> Brut ?): 4050 RON (Diff: 0.00) -> ✅ PASS
+
+### Scenariu: IT - Peste Minim
+- Brut: 4150 RON
+- Net Calculat: 2895 RON
+- Taxe: CAS=840, CASS=415, IV=0, CAM=93
+- Ded. Pers: 770, Baza IV: 0
+- Scutire 300: 0 RON (✅ Scutire 300 Eliminată Correct)
+- Reciprocitate (Net 2895 -> Brut ?): 4020 RON (Diff: 130.00) -> ❌ FAIL
+

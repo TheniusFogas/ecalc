@@ -1,0 +1,9 @@
+--- VALIDARE BRUT 4050 ---
+Brut: 4050
+Net: 2574
+CAS: 938
+CASS: 375
+Impozit: 163
+Deducere Personala: 810
+Baza Impozabila: 1627
+--------------------------
