@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudSun, Wind, Droplets, Sun, Eye, Gauge, Umbrella, Thermometer, Search, Info, Snowflake, Triangle, Sunrise, Sunset, Cloud, CloudRain, CloudLightning, ThermometerSun, Waves, Cloudy, MapPin, Activity, Moon } from 'lucide-react';
 import { generateSEOStory } from '@/lib/seo-story-engine';
@@ -24,7 +24,18 @@ const formatTime = (isoString) => {
 export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS, VARFURI_MUNTE }) {
   const router = useRouter();
   const [cityInput, setCityInput] = useState('');
+  const [theme, setTheme] = useState('white');
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const savedTheme = document.cookie.split('; ').find(row => row.startsWith('weather-theme='))?.split('=')[1];
+    if (savedTheme) setTheme(savedTheme);
+  }, []);
+
+  const changeTheme = (newTheme) => {
+    setTheme(newTheme);
+    document.cookie = `weather-theme=${newTheme}; path=/; max-age=${60 * 60 * 24 * 365}`;
+  };
 
   const handleSearch = () => {
     if (cityInput) router.push(`/vreme/${cityInput.toLowerCase().replace(/\s+/g, '-')}`);
@@ -98,9 +109,23 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                     </p>
                   </div>
                 </div>
-                <div className="bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse"></div>
-                  <span className="text-[10px] font-black tracking-widest uppercase text-blue-700">SISTEM ACTIV</span>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'white', label: 'Alb' },
+                    { id: 'blue', label: 'Blue' },
+                    { id: 'grey', label: 'Grey' }
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => changeTheme(t.id)}
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${theme === t.id
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm scale-105'
+                          : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200'
+                        }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
