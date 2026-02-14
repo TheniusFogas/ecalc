@@ -11,11 +11,15 @@ export default async function CountyPage({ params }) {
 
     if (!countyInfo) return <div>Judetul nu a fost gasit.</div>;
 
-    // Filtram orasele principale din acest judet
+    // Filter cities
     const citiesInCounty = CITIES_ROMANIA.filter(c =>
         c.county.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') === slug ||
         c.county === countyInfo.name
     ).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Categorize cities vs communes/villages based on population or known urban status
+    const urbanCenters = citiesInCounty.filter(c => c.population > 10000 || c.name.includes("Municipiul") || c.name.includes("Oraș"));
+    const ruralLocalities = citiesInCounty.filter(c => !urbanCenters.includes(c));
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
@@ -36,42 +40,67 @@ export default async function CountyPage({ params }) {
                     </div>
                     <div className="relative z-10">
                         <h1 className="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tight">Vremea in județul {countyInfo.name}</h1>
-                        <p className="text-slate-500 font-medium max-w-2xl">
+                        <p className="text-slate-500 font-medium max-w-2xl text-sm italic">
                             Prognoza meteo detaliată și starea vremii pentru toate localitățile din județul {countyInfo.name}.
-                            Alege orașul sau comuna dorită pentru a vedea evoluția temperaturilor, precipitațiile și indicii bioclimatici.
+                            Monitorizăm datele de temperatură, real feel și parametri atmosferici pentru orașe, comune și sate.
                         </p>
                     </div>
                 </header>
 
-                <section className="bg-white p-6 rounded-[6px] border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-                        <MapPin className="h-5 w-5 text-blue-600" />
-                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Localități în {countyInfo.name}</h2>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {citiesInCounty.map(city => {
-                            const citySlug = city.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
-                            return (
-                                <Link
-                                    key={city.name}
-                                    href={`/vreme/${citySlug}`}
-                                    className="group p-3 bg-slate-50 border border-slate-100 rounded-[4px] hover:bg-white hover:border-blue-400 hover:shadow-md transition-all"
-                                >
-                                    <p className="text-sm font-black text-slate-800 group-hover:text-blue-700">{city.name}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Vezi prognoza meteo</p>
-                                </Link>
-                            );
-                        })}
-                    </div>
-
-                    {citiesInCounty.length === 0 && (
-                        <div className="text-center py-12">
-                            <Search className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                            <p className="text-slate-500 font-bold">Folosiți căutarea pentru a găsi localitatea dorită.</p>
-                        </div>
+                <div className="space-y-8">
+                    {/* Urban Centers */}
+                    {urbanCenters.length > 0 && (
+                        <section className="bg-white p-6 rounded-[6px] border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                                <div className="p-2 bg-blue-600 rounded-[4px]">
+                                    <MapPin className="h-4 w-4 text-white" />
+                                </div>
+                                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Orașe & Municipii</h2>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {urbanCenters.map(city => {
+                                    const citySlug = city.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                                    return (
+                                        <Link key={city.name} href={`/vreme/${citySlug}`} className="group p-4 bg-slate-50 border border-slate-100 rounded-[4px] hover:bg-white hover:border-blue-400 hover:shadow-md transition-all">
+                                            <p className="text-sm font-black text-slate-800 group-hover:text-blue-700">{city.name}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Prognoză Meteo</p>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </section>
                     )}
-                </section>
+
+                    {/* All Other Localities */}
+                    {ruralLocalities.length > 0 && (
+                        <section className="bg-white p-6 rounded-[6px] border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                                <div className="p-2 bg-slate-800 rounded-[4px]">
+                                    <MapPin className="h-4 w-4 text-white" />
+                                </div>
+                                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Alte Localități (Comune & Sate)</h2>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-3">
+                                {ruralLocalities.map(city => {
+                                    const citySlug = city.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                                    return (
+                                        <Link key={city.name} href={`/vreme/${citySlug}`} className="group p-1 hover:bg-slate-50 rounded transition-colors">
+                                            <p className="text-[13px] font-bold text-slate-600 group-hover:text-blue-600 truncate">{city.name}</p>
+                                            <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Prognoză</p>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                {citiesInCounty.length === 0 && (
+                    <div className="text-center py-12">
+                        <Search className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                        <p className="text-slate-500 font-bold">Folosiți căutarea pentru a găsi localitatea dorită.</p>
+                    </div>
+                )}
 
                 <div className="mt-8 bg-blue-600 p-8 rounded-[6px] text-white shadow-xl relative overflow-hidden">
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -88,6 +117,6 @@ export default async function CountyPage({ params }) {
             </main>
 
             <Footer />
-        </div>
+        </div >
     );
 }

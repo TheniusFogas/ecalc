@@ -25,8 +25,26 @@ async function getWeatherData(cityName) {
   try {
     // Curatam numele orasului pentru cautare (ex: "baia-mare" -> "Baia Mare")
     const searchName = cityName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName)}&count=1&language=ro&format=json`);
-    const geoData = await geoRes.json();
+
+    // First attempt: direct search
+    let geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName)}&count=1&language=ro&format=json`);
+    let geoData = await geoRes.json();
+
+    // Check if it's a known peak from our list to improve discovery
+    const isPeak = ROMANIAN_MOUNTAIN_PEAKS.some(p => p.slug === cityName);
+
+    // Fallback 1: Append "Romania"
+    if (!geoData.results) {
+      geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName + ', Romania')}&count=1&language=ro&format=json`);
+      geoData = await geoRes.json();
+    }
+
+    // Fallback 2: Append "Munte, Romania" (especially for peaks)
+    if (!geoData.results && isPeak) {
+      geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName + ', Munte, Romania')}&count=1&language=ro&format=json`);
+      geoData = await geoRes.json();
+    }
+
     if (!geoData.results) return null;
     const { latitude, longitude, name, admin1 } = geoData.results[0];
 
