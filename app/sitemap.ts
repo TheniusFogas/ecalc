@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { CITIES_ROMANIA } from '../lib/cities-data'
 import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS } from '../lib/resorts-data'
+import { ROMANIA_COUNTIES } from '../lib/counties-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ecalc.ro'
@@ -76,12 +77,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date()
   }))
 
+  // 5. JUDETE - Indexare programatica pentru cele 42 de judete
+  const countyPages = ROMANIA_COUNTIES.map(judet => ({
+    url: `${baseUrl}/vreme/judet/${judet.slug}`,
+    lastModified: new Date()
+  }))
+
   // Combinăm tot (Total estimat: ~4000-5000 link-uri)
   return [
     ...coreRoutes,
     ...salaryPages,
     ...specificSalarySEO,
     ...locations,
-    ...specialLocations
+    ...specialLocations,
+    ...countyPages
   ]
 }

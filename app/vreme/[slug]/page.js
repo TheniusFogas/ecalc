@@ -30,15 +30,15 @@ export async function generateMetadata({ params }) {
 
 async function getWeatherData(cityName) {
   try {
-    // Curatam numele orasului (eliminam cratimele pentru cautare)
-    const searchName = cityName.replace(/-/g, ' ');
+    // Curatam numele orasului pentru cautare (ex: "baia-mare" -> "Baia Mare")
+    const searchName = cityName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName)}&count=1&language=ro&format=json`);
     const geoData = await geoRes.json();
     if (!geoData.results) return null;
     const { latitude, longitude, name, admin1 } = geoData.results[0];
 
     const [weatherRes, nearbyRes] = await Promise.all([
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,visibility&hourly=temperature_2m,pm10,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,precipitation_probability_max&timezone=auto&forecast_days=14`, { next: { revalidate: 3600 } }),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,visibility,dew_point_2m,cloud_cover&hourly=temperature_2m,pm10,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=14`, { next: { revalidate: 3600 } }),
       // Cautam localitati in acelasi judet (admin1)
       fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(admin1 || name)}&count=40&language=ro&format=json`, { next: { revalidate: 86400 } })
     ]);
