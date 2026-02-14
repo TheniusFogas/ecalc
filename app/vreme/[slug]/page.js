@@ -37,12 +37,12 @@ const VARFURI_MUNTE = [
 
 // SEO: Generam titlu si descriere unica pentru fiecare oras/sat
 export async function generateMetadata({ params }) {
-  const city = params.city.charAt(0).toUpperCase() + params.city.slice(1).replace(/-/g, ' ');
+  const city = params.slug.charAt(0).toUpperCase() + params.slug.slice(1).replace(/-/g, ' ');
   return {
     title: `Vremea in ${city} - Prognoza Meteo Detaliata 2026`,
     description: `Afla starea vremii in ${city}. Temperatura reala, sanse de precipitatii si prognoza pe 14 zile. Date actualizate pentru ${city}.`,
     alternates: {
-      canonical: `https://ecalc.ro/vreme/${params.city}`,
+      canonical: `https://ecalc.ro/vreme/${params.slug}`,
     },
   };
 }
@@ -79,7 +79,7 @@ async function getWeatherData(cityName) {
 }
 
 export default async function Page({ params }) {
-  const data = await getWeatherData(params.city);
+  const data = await getWeatherData(params.slug);
 
   if (!data) return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">

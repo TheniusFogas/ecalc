@@ -265,24 +265,24 @@ export async function GET(request, { params }) {
         await initializeFiscalRules(db);
         await initializeSettings(db);
 
-        const path = params?.path?.join('/') || '';
+        const slug = params?.slug?.join('/') || '';
 
-        if (path.startsWith('fiscal-rules/')) {
-            const year = path.split('/')[1];
+        if (slug.startsWith('fiscal-rules/')) {
+            const year = slug.split('/')[1];
             if (year === 'all' || !year) {
                 return handleFiscalRulesGetAll(db);
             }
             return handleFiscalRulesGet(year, db);
-        } else if (path === 'fiscal-rules') {
+        } else if (slug === 'fiscal-rules') {
             return handleFiscalRulesGetAll(db);
-        } else if (path.startsWith('holidays/')) {
-            const year = path.split('/')[1];
+        } else if (slug.startsWith('holidays/')) {
+            const year = slug.split('/')[1];
             return handleHolidaysGet(db, year);
-        } else if (path === 'settings') {
+        } else if (slug === 'settings') {
             return handleSettingsGet(db);
-        } else if (path === 'leads') {
+        } else if (slug === 'leads') {
             return handleLeadsGet(db);
-        } else if (path === 'leads/export') {
+        } else if (slug === 'leads/export') {
             return handleLeadsExport(db);
         }
 
@@ -298,7 +298,7 @@ export async function GET(request, { params }) {
 }
 
 export async function POST(request, { params }) {
-    const path = params?.path?.join('/') || '';
+    const slug = params?.slug?.join('/') || '';
     let body = {};
     try {
         body = await request.json();
@@ -307,9 +307,9 @@ export async function POST(request, { params }) {
     try {
         const { db } = await connectToDatabase();
 
-        if (path === 'leads') {
+        if (slug === 'leads') {
             return handleLeadPost(body, db);
-        } else if (path === 'auth/login') {
+        } else if (slug === 'auth/login') {
             return handleLogin(body, db);
         }
 
@@ -323,15 +323,15 @@ export async function POST(request, { params }) {
 export async function PUT(request, { params }) {
     try {
         const { db } = await connectToDatabase();
-        const path = params?.path?.join('/') || '';
+        const slug = params?.slug?.join('/') || '';
 
-        if (path.startsWith('fiscal-rules/')) {
-            const year = path.split('/')[1];
+        if (slug.startsWith('fiscal-rules/')) {
+            const year = slug.split('/')[1];
             return handleFiscalRulesPut(year, request, db);
-        } else if (path.startsWith('holidays/')) {
-            const year = path.split('/')[1];
+        } else if (slug.startsWith('holidays/')) {
+            const year = slug.split('/')[1];
             return handleHolidaysPut(request, db, year);
-        } else if (path === 'settings') {
+        } else if (slug === 'settings') {
             return handleSettingsPut(request, db);
         }
 
