@@ -1,11 +1,19 @@
 import { MetadataRoute } from 'next'
 import { CITIES_ROMANIA } from '../lib/cities-data'
-import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS } from '../lib/resorts-data'
+import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS, ROMANIAN_MOUNTAIN_PEAKS } from '../lib/resorts-data'
 import { ROMANIA_COUNTIES } from '../lib/counties-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ecalc.ro'
   const years = [2024, 2025, 2026]
+
+  // Helper for consistent slug generation
+  const normalizeSlug = (name: string) => name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 
   // 1. Rutele de bază și Calculatoarele principale pentru toți anii
   const coreRoutes = years.flatMap(year => [
@@ -25,14 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 
   // 2. SALARII - Generare PROGRAMATICĂ a link-urilor (Masiv)
-  // Generăm link-uri din 100 în 100 RON între 3700 și 20000
-  const salarySteps = []
-  for (let s = 3700; s <= 20000; s += 100) {
-    salarySteps.push(s)
-  }
-  // Adăugăm sume fixe/rotunde importante
-  const fixedSalaries = [1000, 4050, 4325, 4850, 5500, 10000, 15000, 20000]
-  const allSalaryValues = Array.from(new Set([...salarySteps, ...fixedSalaries])).sort((a, b) => a - b)
+  const allSalaryValues = [1000, 3700, 4050, 4325, 4850, 5000, 5500, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000]
 
   const salaryPages = years.flatMap(year =>
     allSalaryValues.flatMap(val => [
@@ -41,38 +42,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ])
   )
 
-  // Rute specifice SEO Salariu Minim
   const specificSalarySEO = years.flatMap(year => [
     { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-pe-economie-${year}`, lastModified: new Date() },
     { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-constructii-${year}`, lastModified: new Date() },
     { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-minim-agricultura-${year}`, lastModified: new Date() }
   ])
 
-  // 3. METEO - Toate cele 320 orașe din bază
-  const locations = CITIES_ROMANIA.map(city => {
-    // Normalizare slug: "Alba Iulia" -> "alba-iulia"
-    const slug = city.name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Scoate diacriticele
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+  // 3. METEO - Orașe (200+)
+  const locations = CITIES_ROMANIA.map(city => ({
+    url: `${baseUrl}/vreme/${normalizeSlug(city.name)}`,
+    lastModified: new Date()
+  }))
 
-    return {
-      url: `${baseUrl}/vreme/${slug}`,
-      lastModified: new Date()
-    }
-  })
-
-  // 4. LOCAȚII SPECIALE (Stațiuni Montane pe Zone, Litoral, Vârfuri)
+  // 4. LOCAȚII SPECIALE (Stațiuni, Litoral, Vârfuri)
   const mountainSlugs = MOUNTAIN_RESORTS_ZONES.flatMap(z => z.items.map(i => i.slug))
   const coastalSlugs = ALL_COASTAL_RESORTS.map(s => s.slug)
-  const mountainPeaks = [
-    'varful-moldoveanu', 'varful-negoiu', 'varful-omu', 'varful-peleaga', 'varful-toaca', 'sarmizegetusa',
-    'balea-lac', 'transfagarasan', 'aeroport-otopeni', 'aeroport-cluj', 'aeroport-timisoara', 'delta-dunarii'
-  ]
+  const peakSlugs = ROMANIAN_MOUNTAIN_PEAKS.map(p => p.slug)
+  const extraSlugs = ['transfagarasan', 'aeroport-otopeni', 'aeroport-cluj', 'aeroport-timisoara', 'delta-dunarii']
 
-  const specialLocations = Array.from(new Set([...mountainSlugs, ...coastalSlugs, ...mountainPeaks])).map(slug => ({
+  const specialLocations = Array.from(new Set([...mountainSlugs, ...coastalSlugs, ...peakSlugs, ...extraSlugs])).map(slug => ({
     url: `${baseUrl}/vreme/${slug}`,
     lastModified: new Date()
   }))
