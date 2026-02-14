@@ -39,9 +39,15 @@ async function getWeatherData(cityName) {
       geoData = await geoRes.json();
     }
 
-    // Fallback 2: Append "Munte, Romania" (especially for peaks)
+    // Fallback 2: For peaks, try "Varful [Name], Romania"
     if (!geoData.results && isPeak) {
-      geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchName + ', Munte, Romania')}&count=1&language=ro&format=json`);
+      geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent('Varful ' + searchName + ', Romania')}&count=1&language=ro&format=json`);
+      geoData = await geoRes.json();
+    }
+
+    // Fallback 3: Generic "Varful [Name]"
+    if (!geoData.results && isPeak) {
+      geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent('Varful ' + searchName)}&count=1&language=ro&format=json`);
       geoData = await geoRes.json();
     }
 
