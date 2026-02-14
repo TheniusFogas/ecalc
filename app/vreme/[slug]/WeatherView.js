@@ -13,7 +13,7 @@ const getWeatherIcon = (code, isNight = false) => {
   return <CloudSun className="h-6 w-6 text-slate-400" />;
 };
 
-export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, STATIUNI_SKI, STATIUNI_MARE, VARFURI_MUNTE }) {
+export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS, VARFURI_MUNTE }) {
   const router = useRouter();
   const [cityInput, setCityInput] = useState('');
   const currentYear = new Date().getFullYear();
@@ -24,7 +24,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
 
   return (
     <div className="space-y-6">
-      {/* Search Bar - Optimizat pentru Accesibilitate */}
+      {/* ... (search and dashboard remains same) */}
       <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex gap-2 mb-6">
         <label htmlFor="city-search" className="sr-only">Cauta localitate</label>
         <input
@@ -46,7 +46,6 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
         </button>
       </div>
 
-      {/* Dashboard Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className={`lg:col-span-5 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl group transition-all duration-700 bg-gradient-to-br ${weather.current.temperature_2m > 30 ? 'from-orange-500 to-red-600' :
           weather.current.temperature_2m < 5 ? 'from-slate-700 to-slate-900' :
@@ -71,7 +70,6 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
           </div>
         </div>
 
-        {/* Widget-uri detaliate - Corectie contrast text */}
         <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { l: 'Vânt', v: `${weather.current.wind_speed_10m} km/h`, i: Wind, c: 'text-blue-600' },
@@ -92,7 +90,6 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
         </div>
       </div>
 
-      {/* Evolutie pe Ore - Redesign MD3 Compact fara Scroll */}
       <section className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm" aria-labelledby="hourly-forecast">
         <h2 id="hourly-forecast" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
           <Gauge className="h-3 w-3" />
@@ -124,10 +121,9 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
         </div>
       </section>
 
-      {/* SEO Story Section */}
       {generateSEOStory(weather.cityName, weather, currentYear)}
 
-      {/* Orase Principale */}
+      {/* Retea Localitati Principale */}
       <nav className="mt-12" aria-label="Localitati principale">
         <p className="text-center text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Localități Principale</p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -139,42 +135,50 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
         </div>
       </nav>
 
-      {nearbyPlaces.length > 0 && (
-        <section className="mt-12 p-6 bg-blue-50/30 rounded-lg border border-blue-100 shadow-sm" aria-labelledby="nearby-title">
-          <h2 id="nearby-title" className="text-[10px] font-black text-blue-600 uppercase mb-6 tracking-widest text-center">Localități în Județul {weather.region}</h2>
-          <div className="flex flex-wrap justify-center gap-2">
+      {/* EXPANDED: Statiuni Montane pe Zone */}
+      <section className="mt-12 bg-white p-6 rounded-lg border border-slate-200 shadow-sm" aria-labelledby="mountain-resorts-title">
+        <h2 id="mountain-resorts-title" className="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest flex items-center gap-2">
+          <Snowflake className="h-3 w-3" /> Stațiuni Montane (Explorare pe Zone)
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {MOUNTAIN_RESORTS_ZONES.map((zone, zIdx) => (
+            <div key={zIdx} className="space-y-3">
+              <h3 className="text-[11px] font-black text-blue-600 uppercase border-b border-blue-100 pb-1">{zone.zone}</h3>
+              <div className="flex flex-wrap gap-1">
+                {zone.items.map(item => (
+                  <a key={item.slug} href={`/vreme/${item.slug}`} className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                    {item.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Litoral Romanesc - Full List */}
+      <section className="mt-12 bg-white p-6 rounded-lg border border-slate-200 shadow-sm" aria-labelledby="coastal-resorts-title">
+        <h2 id="coastal-resorts-title" className="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest flex items-center gap-2">
+          <Umbrella className="h-3 w-3" /> Litoral Românesc (Toate Stațiunile)
+        </h2>
+        <div className="flex flex-wrap gap-2 justify-center py-4">
+          {ALL_COASTAL_RESORTS.map(s => (
+            <a key={s.slug} href={`/vreme/${s.slug}`} className="px-4 py-2 bg-blue-50/50 border border-blue-100 rounded-xl text-[11px] font-black text-blue-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm">
+              {s.name}
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid md:grid-cols-2 gap-6 mt-12 bg-white p-6 rounded-lg border border-slate-200">
+        <section aria-labelledby="nearby-title">
+          <h2 id="nearby-title" className="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest flex items-center gap-2">
+            <Search className="h-3 w-3" /> Localități în Județul {weather.region}
+          </h2>
+          <div className="flex flex-wrap gap-2">
             {nearbyPlaces.map((place) => (
-              <a key={place.id} href={`/vreme/${place.name.toLowerCase().replace(/\s+/g, '-')}`} className="px-3 py-1.5 bg-white border border-blue-100 rounded-md text-[11px] font-bold text-slate-600 hover:text-blue-700 hover:border-blue-400 shadow-sm transition-all">
-                Vremea in {place.name}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* NEW: Ski/Sea/Mountain Sections for SEO Authority */}
-      <div className="grid md:grid-cols-3 gap-6 mt-12 bg-white p-6 rounded-lg border border-slate-200">
-        <section aria-labelledby="ski-title">
-          <h3 id="ski-title" className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest flex items-center gap-2">
-            <Snowflake className="h-3 w-3" /> Vremea la Ski
-          </h3>
-          <div className="flex flex-wrap gap-1">
-            {STATIUNI_SKI.map(s => (
-              <a key={s.slug} href={`/vreme/${s.slug}`} className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                {s.name}
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section aria-labelledby="sea-title">
-          <h3 id="sea-title" className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest flex items-center gap-2">
-            <Umbrella className="h-3 w-3" /> Vremea la Mare
-          </h3>
-          <div className="flex flex-wrap gap-1">
-            {STATIUNI_MARE.map(s => (
-              <a key={s.slug} href={`/vreme/${s.slug}`} className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                {s.name}
+              <a key={place.id} href={`/vreme/${place.name.toLowerCase().replace(/\s+/g, '-')}`} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-md text-[11px] font-bold text-slate-600 hover:text-blue-700 hover:border-blue-400 shadow-sm transition-all">
+                {place.name}
               </a>
             ))}
           </div>
@@ -182,11 +186,11 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, S
 
         <section aria-labelledby="mt-title">
           <h3 id="mt-title" className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest flex items-center gap-2">
-            <Triangle className="h-3 w-3" /> Vârfuri Munte
+            <Triangle className="h-3 w-3" /> Vârfuri Munte & Locații Speciale
           </h3>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {VARFURI_MUNTE.map(s => (
-              <a key={s.slug} href={`/vreme/${s.slug}`} className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+              <a key={s.slug} href={`/vreme/${s.slug}`} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-md text-[11px] font-bold text-slate-600 hover:text-blue-700 hover:border-blue-400 shadow-sm transition-all">
                 {s.name}
               </a>
             ))}

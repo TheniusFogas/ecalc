@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { CITIES_ROMANIA } from '../lib/cities-data'
+import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS } from '../lib/resorts-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ecalc.ro'
@@ -62,13 +63,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   })
 
-  // Adăugăm și locațiile speciale (stațiuni/aeroporturi) care s-ar putea să nu fie în CITIES_ROMANIA
-  const specialLocations = [
-    'mamaia', 'costinesti', 'vama-veche', 'neptun', 'olimp', 'jupiter', 'venus', 'saturn', 'eforie-nord', 'eforie-sud', '2-mai', 'corbu', 'tuzla',
-    'sinaia', 'predeal', 'busteni', 'azuga', 'poiana-brasov', 'paltinis', 'straja', 'ranca', 'vatra-dornei', 'cavnic', 'balea-lac', 'voineasa', 'durau', 'arieseni', 'semenic', 'cota-2000-sinaia',
-    'baile-felix', 'baile-herculane', 'sovata', 'covasna', 'calimanesti', 'caciulata', 'baile-olanesti', 'slanic-moldova', 'borsec', 'praid', 'baile-tusnad', 'ocna-sibiului',
-    'aeroport-otopeni', 'aeroport-cluj', 'aeroport-timisoara', 'delta-dunarii', 'transfagarasan'
-  ].map(slug => ({
+  // 4. LOCAȚII SPECIALE (Stațiuni Montane pe Zone, Litoral, Vârfuri)
+  const mountainSlugs = MOUNTAIN_RESORTS_ZONES.flatMap(z => z.items.map(i => i.slug))
+  const coastalSlugs = ALL_COASTAL_RESORTS.map(s => s.slug)
+  const mountainPeaks = [
+    'varful-moldoveanu', 'varful-negoiu', 'varful-omu', 'varful-peleaga', 'varful-toaca', 'sarmizegetusa',
+    'balea-lac', 'transfagarasan', 'aeroport-otopeni', 'aeroport-cluj', 'aeroport-timisoara', 'delta-dunarii'
+  ]
+
+  const specialLocations = Array.from(new Set([...mountainSlugs, ...coastalSlugs, ...mountainPeaks])).map(slug => ({
     url: `${baseUrl}/vreme/${slug}`,
     lastModified: new Date()
   }))

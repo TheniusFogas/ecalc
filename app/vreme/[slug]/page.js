@@ -3,28 +3,9 @@ import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
 import WeatherView from './WeatherView';
 
+import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS } from '@/lib/resorts-data';
+
 const ORASE_PRINCIPALE = ['Alba Iulia', 'Alexandria', 'Arad', 'Bacau', 'Baia Mare', 'Bistrita', 'Botosani', 'Braila', 'Brasov', 'Bucuresti', 'Buzau', 'Calarasi', 'Cluj-Napoca', 'Constanta', 'Craiova', 'Deva', 'Drobeta-Turnu Severin', 'Focsani', 'Galati', 'Giurgiu', 'Iasi', 'Miercurea Ciuc', 'Oradea', 'Piatra Neamt', 'Pitesti', 'Ploiesti', 'Ramnicu Valcea', 'Resita', 'Satu Mare', 'Sfantu Gheorghe', 'Sibiu', 'Slatina', 'Slobozia', 'Suceava', 'Targoviste', 'Targu Jiu', 'Targu Mures', 'Timisoara', 'Tulcea', 'Vaslui', 'Zalau'].sort();
-
-const STATIUNI_SKI = [
-  { name: 'Poiana Brasov', slug: 'poiana-brasov' },
-  { name: 'Predeal', slug: 'predeal' },
-  { name: 'Sinaia', slug: 'sinaia' },
-  { name: 'Busteni', slug: 'busteni' },
-  { name: 'Azuga', slug: 'azuga' },
-  { name: 'Paltinis', slug: 'paltinis' },
-  { name: 'Straja', slug: 'straja' },
-  { name: 'Cavnic', slug: 'cavnic' }
-];
-
-const STATIUNI_MARE = [
-  { name: 'Mamaia', slug: 'mamaia' },
-  { name: 'Eforie Nord', slug: 'eforie-nord' },
-  { name: 'Costinesti', slug: 'costinesti' },
-  { name: 'Neptun', slug: 'neptun' },
-  { name: 'Vama Veche', slug: 'vama-veche' },
-  { name: 'Mangalia', slug: 'mangalia' },
-  { name: 'Navodari', slug: 'navodari' }
-];
 
 const VARFURI_MUNTE = [
   { name: 'Varful Moldoveanu', slug: 'varful-moldoveanu' },
@@ -99,8 +80,8 @@ export default async function Page({ params }) {
           weather={data.weather}
           nearbyPlaces={data.nearbyPlaces}
           ORASE_PRINCIPALE={ORASE_PRINCIPALE}
-          STATIUNI_SKI={STATIUNI_SKI}
-          STATIUNI_MARE={STATIUNI_MARE}
+          MOUNTAIN_RESORTS_ZONES={MOUNTAIN_RESORTS_ZONES}
+          ALL_COASTAL_RESORTS={ALL_COASTAL_RESORTS}
           VARFURI_MUNTE={VARFURI_MUNTE}
         />
       </main>
