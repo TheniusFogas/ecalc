@@ -25,9 +25,11 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
   const router = useRouter();
   const [cityInput, setCityInput] = useState('');
   const [theme, setTheme] = useState('white');
+  const [mounted, setMounted] = useState(false);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
+    setMounted(true);
     const savedTheme = document.cookie.split('; ').find(row => row.startsWith('weather-theme='))?.split('=')[1];
     if (savedTheme) setTheme(savedTheme);
   }, []);
@@ -44,6 +46,8 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
   const currentTemp = Math.round(weather.current.temperature_2m);
   const isHot = currentTemp > 30;
   const isCold = currentTemp < 5;
+
+  if (!mounted) return <div className="min-h-screen bg-white" />;
 
   return (
     <div className="space-y-4">
@@ -142,6 +146,9 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                 const date = new Date(time);
                 const dayName = date.toLocaleDateString('ro-RO', { weekday: 'short' }).toUpperCase();
                 const dayDate = date.getDate() + '/' + (date.getMonth() + 1);
+                const maxTemp = Math.round(weather.daily?.temperature_2m_max?.[i] || 0);
+                const minTemp = Math.round(weather.daily?.temperature_2m_min?.[i] || 0);
+                const precipProb = weather.daily?.precipitation_probability_max?.[i] || 0;
 
                 return (
                   <div key={time} className="bg-[#1a1d2d] flex flex-col items-center py-5 px-2 hover:bg-[#242b3a] transition-all group cursor-pointer border border-transparent hover:border-blue-500/30 rounded-md">
@@ -151,26 +158,26 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                     </div>
 
                     <div className="h-16 w-16 flex items-center justify-center mb-8 transform group-hover:scale-110 transition-transform">
-                      {getWeatherIcon(weather.daily.weather_code[i])}
+                      {getWeatherIcon(weather.daily?.weather_code?.[i])}
                     </div>
 
                     <div className="space-y-1.5 mb-8 w-full px-1">
-                      <div className="bg-[#4caf50] text-[#171b28] text-center rounded-[4px] py-1.5 text-[14px] font-black shadow-lg">{Math.round(weather.daily.temperature_2m_max[i])}°C</div>
-                      <div className="bg-[#2e7d32] text-white text-center rounded-[4px] py-1.5 text-[14px] font-black shadow-md">{Math.round(weather.daily.temperature_2m_min[i])}°C</div>
+                      <div className="bg-[#4caf50] text-[#171b28] text-center rounded-[4px] py-1.5 text-[14px] font-black shadow-lg">{maxTemp}°C</div>
+                      <div className="bg-[#2e7d32] text-white text-center rounded-[4px] py-1.5 text-[14px] font-black shadow-md">{minTemp}°C</div>
                     </div>
 
                     <div className="text-[11px] text-slate-400 space-y-3 mt-auto w-full px-2">
                       <div className="flex items-center gap-2 group-hover:text-white transition-colors">
                         <Triangle className="h-3 w-3 rotate-180 fill-current opacity-40" />
-                        <span className="font-bold">⬅ {weather.daily.wind_speed_10m_max[i]} km/h</span>
+                        <span className="font-bold">⬅ {weather.daily?.wind_speed_10m_max?.[i] || 0} km/h</span>
                       </div>
                       <div className="flex items-center gap-2 group-hover:text-blue-400 transition-colors">
                         <Droplets className="h-3 w-3 text-blue-500" />
-                        <span className="font-bold">{weather.daily.precipitation_probability_max[i] || '-'} mm</span>
+                        <span className="font-bold">{weather.daily?.precipitation_sum?.[i] || '-'} mm</span>
                       </div>
                       <div className="flex items-center gap-2 group-hover:text-yellow-500 transition-colors">
                         <Sun className="h-3 w-3 text-yellow-500" />
-                        <span className="font-bold">☀ {Math.round(weather.daily.sunshine_duration[i] / 3600)} h</span>
+                        <span className="font-bold">☀ {Math.round((weather.daily?.sunshine_duration?.[i] || 0) / 3600)} h</span>
                       </div>
                     </div>
 
@@ -202,15 +209,15 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
               <div className="grid grid-cols-8 gap-4 items-end">
                 {weather.hourly.time.slice(0, 8).map((time, i) => {
                   const h = new Date(time).getHours();
-                  const cloudCover = weather.hourly.cloud_cover?.[i] || 20;
+                  const cloudCover = weather.hourly?.cloud_cover?.[i] || 20;
                   return (
                     <div key={i} className="flex flex-col items-center gap-4 w-full group">
                       <span className="text-[11px] text-slate-500 font-black">{h === 0 ? '24' : h < 10 ? '0' + h : h}⁰⁰</span>
                       <div className="h-12 w-12 flex items-center justify-center transform group-hover:scale-125 transition-transform">
-                        {getWeatherIcon(weather.hourly.weather_code[i])}
+                        {getWeatherIcon(weather.hourly?.weather_code?.[i])}
                       </div>
-                      <div className="w-full bg-[#4caf50] text-[#171b28] text-center rounded-[3px] py-1 text-[12px] font-black">{Math.round(weather.hourly.temperature_2m[i])}°</div>
-                      <span className="text-[10px] text-slate-500 font-bold mb-2">{Math.round(weather.hourly.apparent_temperature[i])}°</span>
+                      <div className="w-full bg-[#4caf50] text-[#171b28] text-center rounded-[3px] py-1 text-[12px] font-black">{Math.round(weather.hourly?.temperature_2m?.[i] || 0)}°</div>
+                      <span className="text-[10px] text-slate-500 font-bold mb-2">{Math.round(weather.hourly?.apparent_temperature?.[i] || 0)}°</span>
 
                       {/* Blue visualization bars for clouds/precip */}
                       <div className="w-full space-y-1 mt-2">
@@ -218,7 +225,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                           <div className="h-full bg-blue-600/50 rounded-full" style={{ width: `${cloudCover}%` }}></div>
                         </div>
                         <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${weather.hourly.precipitation_probability?.[i] || 0}%` }}></div>
+                          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${weather.hourly?.precipitation_probability?.[i] || 0}%` }}></div>
                         </div>
                       </div>
 
@@ -239,7 +246,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Răsărit / Apus</p>
-                  <p className="text-sm font-black">{formatTime(weather.daily.sunrise[0])} / {formatTime(weather.daily.sunset[0])}</p>
+                  <p className="text-sm font-black">{formatTime(weather.daily?.sunrise?.[0])} / {formatTime(weather.daily?.sunset?.[0])}</p>
                 </div>
               </div>
               <div className="bg-[#1a1d2d] p-4 rounded-lg border border-slate-800 flex items-center gap-4">
@@ -248,7 +255,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Index UV</p>
-                  <p className="text-sm font-black">UV {weather.daily.uv_index_max[0]} (Moderat)</p>
+                  <p className="text-sm font-black">UV {weather.daily?.uv_index_max?.[0] || 0} (Moderat)</p>
                 </div>
               </div>
               <div className="bg-[#1a1d2d] p-4 rounded-lg border border-slate-800 flex items-center gap-4">
