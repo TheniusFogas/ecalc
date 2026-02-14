@@ -119,3 +119,20 @@ Următoarele fișiere/foldere au fost mutate în `_ARCHIVE_LOGIC_` pentru a nu p
 - `salary-calculator.js` (Cod vechi)
 
 **Acest document este acum singura sursă de adevăr.**
+
+---
+
+## 6. Dynamic SEO Content Engine (`lib/seo-story-engine.js`)
+
+Implementează rotația deterministă a conținutului pentru paginile de vreme pentru a maximiza indexarea Google (Programmatic SEO).
+
+### Logica de Rotație
+Sistemul folosește un hash bazat pe `NumeLocalitate + ZiuaLunii` pentru a selecta șabloane de text.
+- **Diversitate**: Orașe diferite au texte diferite în aceeași zi.
+- **Prospețime (Freshness)**: Textul se schimbă automat la fiecare 24 de ore.
+- **Stabilitate**: Googlebot vede același text pe parcursul unei zile (fără "flicker" de conținut).
+
+### Structura Șabloanelor
+- **4 Zone x 4 Variante**: Total 16 template-uri profesionale.
+- **Zone**: Intro Climatic, Activități Curente, Tendințe Regionale, Siguranță și Planificare.
+- **Integrare**: Importat direct în `WeatherView.js` ca componentă React.

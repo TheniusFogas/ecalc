@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudSun, Wind, Droplets, Sun, Eye, Gauge, Umbrella, Thermometer, Search, Info, Snowflake, Triangle } from 'lucide-react';
+import { generateSEOStory } from '@/lib/seo-story-engine';
 
 const getWeatherIcon = (code, isNight = false) => {
   if (isNight) return <span className="text-2xl" role="img" aria-label="Noapte">🌙</span>;
@@ -10,54 +11,6 @@ const getWeatherIcon = (code, isNight = false) => {
   if (code <= 67) return <Umbrella className="h-6 w-6 text-blue-500" />;
   if (code <= 99) return <span className="text-2xl" role="img" aria-label="Furtuna">⚡</span>;
   return <CloudSun className="h-6 w-6 text-slate-400" />;
-};
-
-const generateSEOStory = (cityName, weather, currentYear) => {
-  const temp = Math.round(weather.current.temperature_2m);
-  const feelsLike = Math.round(weather.current.apparent_temperature);
-  const condition = weather.current.weather_code === 0 ? 'senin' : 'variabil';
-
-  return (
-    <div className="mt-16 bg-white p-8 rounded-lg border border-slate-200 shadow-sm space-y-6 text-slate-700 leading-relaxed">
-      <div className="flex items-center gap-3 mb-4">
-        <Info className="h-6 w-6 text-blue-600" />
-        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Vremea in {cityName} - Ghid si Info Meteo {currentYear}</h2>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <p>
-            Daca te intrebi cum este <strong>vremea in {cityName}</strong> astazi, datele noastre indica o temperatura de <strong>{temp}°C</strong>, resimtita ca fiind <strong>{feelsLike}°C</strong>.
-            Sistemul de monitorizare <strong>meteo {cityName}</strong> actualizeaza in timp real parametrii critici precum umiditatea de {weather.current.relative_humidity_2m}% si viteza vantului de {weather.current.wind_speed_10m} km/h.
-          </p>
-          <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-md">
-            <Sun className="h-5 w-5 text-orange-500 shrink-0 mt-1" />
-            <p className="text-sm">
-              Pentru cei care planifica activitati in aer liber, <strong>prognoza meteo in {cityName} pe 7 zile</strong> este esentiala.
-              Fie ca vorbim de temperaturile maxime sau de sansele de precipitatii, o verificare rapida te poate salva de surprize neplacute.
-              Informatiile noastre sunt colectate via satelit si prelucrate pentru a oferi cea mai buna acuratete locala.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <p>
-            Analizand rubrica <strong>meteo 7 zile {cityName} si tara</strong>, observam tendinte de stabilizare a vremii.
-            In {cityName}, clima este influentata direct de regiunea {weather.region}, fapt ce asigura un microclimat specific.
-            Urmarim constant indicele UV si presiunea atmosferica pentru a oferi un tablou complet.
-          </p>
-          <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-md">
-            <Wind className="h-5 w-5 text-blue-500 shrink-0 mt-1" />
-            <p className="text-sm">
-              Nu uita: <strong>vremea in {cityName}</strong> se poate schimba rapid.
-              Datele noastre despre <strong>vremea pe 14 zile in {cityName}</strong> includ si probabilitatea maxima de precipitatii zilnice,
-              ajutand la planificarea calatoriilor sau a proiectelor de constructie care depind de conditiile atmosferice.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, STATIUNI_SKI, STATIUNI_MARE, VARFURI_MUNTE }) {
