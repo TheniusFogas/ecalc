@@ -172,12 +172,12 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
 
           {/* Right: Hourly Forecast */}
           <div className="lg:col-span-4">
-            <section className="bg-white p-6 rounded-[6px] border border-slate-100 shadow-sm h-full flex flex-col">
-              <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.15em] mb-4 flex items-center gap-3">
-                <div className="p-1.5 bg-blue-50 rounded-full"><Activity className="h-4 w-4 text-blue-600" /></div>
-                EVOLUȚIE ORARĂ (URMĂTOARELE 24H)
+            <section className="bg-white p-3 rounded-[6px] border border-slate-100 shadow-sm h-full flex flex-col">
+              <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.15em] mb-2 flex items-center gap-3">
+                <div className="p-1 px-2 bg-blue-50 rounded-full"><Activity className="h-3 w-3 text-blue-600" /></div>
+                EVOLUȚIE ORARĂ
               </h2>
-              <div className="grid grid-cols-4 gap-x-2 gap-y-1.5 flex-grow content-start">
+              <div className="grid grid-cols-6 gap-x-1 gap-y-1 flex-grow content-start">
                 {weather.hourly.time.slice(0, 24).map((time, index) => {
                   const hour = new Date(time).getHours();
                   const tempValue = Math.round(weather.hourly.temperature_2m[index]);
@@ -185,12 +185,12 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                   const isCurrentHour = index === 0;
 
                   return (
-                    <div key={time} className={`flex flex-col items-center py-1.5 rounded-[4px] border ${isCurrentHour ? 'border-blue-200 bg-blue-50/30' : 'border-transparent hover:bg-slate-50'}`}>
-                      <span className="text-[8px] font-black text-slate-400 uppercase mb-1">{hour}:00</span>
-                      <div className="mb-1 transform scale-90">
+                    <div key={time} className={`flex flex-col items-center py-0.5 rounded-[4px] border ${isCurrentHour ? 'border-blue-200 bg-blue-50/30' : 'border-transparent hover:bg-slate-50'}`}>
+                      <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">{hour}:00</span>
+                      <div className="mb-0.5 transform scale-[0.75]">
                         {getWeatherIcon(weather.hourly.weather_code[index], isNight)}
                       </div>
-                      <span className="text-[14px] font-extrabold text-slate-900">{tempValue}°</span>
+                      <span className="text-[12px] font-extrabold text-slate-900">{tempValue}°</span>
                     </div>
                   );
                 })}
@@ -203,35 +203,35 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
       {generateSEOStory(weather.cityName, weather, currentYear)}
 
       {/* Footer Design Fixes - Balanced & Full Width */}
-      <footer className="mt-8 space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+      <footer className="mt-6 space-y-2">
+        <div className="flex flex-col lg:flex-row gap-2 items-stretch">
           {/* Top 3 boxes with forced stretch */}
-          <div className="bg-white p-6 rounded-[6px] border border-slate-200 flex-1 flex flex-col shadow-sm">
-            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+          <div className="bg-white p-4 rounded-[6px] border border-slate-100 flex-1 flex flex-col shadow-sm">
+            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-2 border-b border-slate-50 pb-1 flex items-center gap-2">
+              <div className="h-3 w-1 bg-blue-600 rounded-full"></div>
               REȘEDINȚE DE JUDEȚ
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-1 grid-flow-row">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 grid-flow-row">
               {ORASE_PRINCIPALE.map(oras => (
-                <a key={oras} href={`/vreme/${oras.toLowerCase().replace(/\s+/g, '-')}`} className="text-[10px] font-bold text-slate-500 hover:text-blue-600 truncate bg-slate-50 hover:bg-white px-2 py-1.5 rounded-[2px] border border-transparent hover:border-blue-200 transition-all">
+                <a key={oras} href={`/vreme/${oras.toLowerCase().replace(/\s+/g, '-')}`} className="text-[9px] font-bold text-slate-500 hover:text-blue-600 truncate bg-slate-50 hover:bg-white px-2 py-0.5 rounded-[2px] border border-transparent hover:border-blue-100 transition-all">
                   {oras}
                 </a>
               ))}
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-[6px] border border-slate-200 flex-1 flex flex-col shadow-sm">
-            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+          <div className="bg-white p-4 rounded-[6px] border border-slate-100 flex-1 flex flex-col shadow-sm">
+            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-2 border-b border-slate-50 pb-1 flex items-center gap-2">
+              <div className="h-3 w-1 bg-blue-600 rounded-full"></div>
               STAȚIUNI MONTANE
             </h3>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-1">
               {MOUNTAIN_RESORTS_ZONES.map((zone, zIdx) => (
-                <div key={zIdx} className="space-y-2">
-                  <p className="text-[9px] font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded inline-block">{zone.zone}</p>
-                  <div className="flex flex-wrap gap-1">
+                <div key={zIdx} className="space-y-0.5">
+                  <p className="text-[8px] font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded inline-block">{zone.zone}</p>
+                  <div className="flex flex-wrap gap-0.5">
                     {zone.items.map(item => (
-                      <a key={item.slug} href={`/vreme/${item.slug}`} className="text-[10px] font-extrabold text-slate-600 hover:text-white hover:bg-blue-600 bg-white px-2 py-1 rounded-[2px] transition-all border border-slate-200 shadow-sm">
+                      <a key={item.slug} href={`/vreme/${item.slug}`} className="text-[9px] font-extrabold text-slate-600 hover:text-white hover:bg-blue-600 bg-white px-1.5 py-0.5 rounded-[2px] transition-all border border-slate-100 shadow-sm">
                         {item.name}
                       </a>
                     ))}
@@ -241,29 +241,29 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-4">
-            <div className="bg-white p-6 rounded-[6px] border border-slate-200 flex-1 shadow-sm">
-              <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+          <div className="flex-1 flex flex-col gap-2">
+            <div className="bg-white p-4 rounded-[6px] border border-slate-100 flex-1 shadow-sm">
+              <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-2 border-b border-slate-50 pb-1 flex items-center gap-2">
+                <div className="h-3 w-1 bg-blue-600 rounded-full"></div>
                 LITORAL ROMÂNESC
               </h3>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {ALL_COASTAL_RESORTS.map(s => (
-                  <a key={s.slug} href={`/vreme/${s.slug}`} className="text-[10px] font-bold text-blue-700 bg-blue-50/50 px-2 py-1.5 rounded-[2px] border border-blue-100 hover:bg-blue-600 hover:text-white transition-all">
+                  <a key={s.slug} href={`/vreme/${s.slug}`} className="text-[9px] font-bold text-blue-700 bg-blue-50/50 px-2 py-1 rounded-[2px] border border-blue-50 hover:bg-blue-600 hover:text-white transition-all">
                     {s.name}
                   </a>
                 ))}
               </div>
             </div>
-            <div className="bg-white p-6 rounded-[6px] border border-slate-200 flex-1 shadow-sm">
-              <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+            <div className="bg-white p-4 rounded-[6px] border border-slate-100 flex-1 shadow-sm">
+              <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-2 border-b border-slate-50 pb-1 flex items-center gap-2">
+                <div className="h-3 w-1 bg-blue-600 rounded-full"></div>
                 VÂRFURI +2500M
               </h3>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {VARFURI_MUNTE.map(s => (
-                  <a key={s.slug} href={`/vreme/${s.slug}`} className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-1.5 rounded-[2px] border border-slate-200 hover:border-blue-500 hover:bg-white transition-all">
-                    {s.name} <span className="text-[9px] opacity-70 ml-1">({s.alt}m)</span>
+                  <a key={s.slug} href={`/vreme/${s.slug}`} className="text-[9px] font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-[2px] border border-slate-100 hover:border-blue-500 hover:bg-white transition-all">
+                    {s.name} <span className="text-[8px] opacity-70 ml-1">({s.alt}m)</span>
                   </a>
                 ))}
               </div>
@@ -272,12 +272,12 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
         </div>
 
         {/* Localitati pe judete - Requirement 6: Full Width */}
-        <div className="bg-white p-4 rounded-[6px] border border-slate-200 shadow-sm">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Index Complet: Localități pe Județe (13.000+)</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-x-4 gap-y-2">
+        <div className="bg-white p-3 rounded-[6px] border border-slate-100 shadow-sm">
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-50 pb-1">Index Complet: Localități pe Județe</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-x-2 gap-y-1">
             {ROMANIA_COUNTIES.map(judet => (
-              <a key={judet.slug} href={`/vreme/judet/${judet.slug}`} className="text-[10px] font-black text-blue-600 hover:underline flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5 opacity-50" /> Județul {judet.name}
+              <a key={judet.slug} href={`/vreme/judet/${judet.slug}`} className="text-[9px] font-black text-blue-600 hover:underline flex items-center gap-1">
+                <MapPin className="h-2 w-2 opacity-50" /> {judet.name}
               </a>
             ))}
           </div>
