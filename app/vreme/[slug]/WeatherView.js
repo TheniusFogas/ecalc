@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CloudSun, Wind, Droplets, Sun, Eye, Gauge, Umbrella, Thermometer, Search, Info, Snowflake, Triangle, Sunrise, Sunset, Cloud, CloudRain, CloudLightning, ThermometerSun, Waves, Cloudy, MapPin, Activity } from 'lucide-react';
+import { CloudSun, Wind, Droplets, Sun, Eye, Gauge, Umbrella, Thermometer, Search, Info, Snowflake, Triangle, Sunrise, Sunset, Cloud, CloudRain, CloudLightning, ThermometerSun, Waves, Cloudy, MapPin, Activity, Moon } from 'lucide-react';
 import { generateSEOStory } from '@/lib/seo-story-engine';
 import { ROMANIA_COUNTIES } from '@/lib/counties-data';
 
 const getWeatherIcon = (code, isNight = false) => {
   const iconClass = "h-6 w-6 transition-all duration-300";
-  if (isNight) return <span className="text-2xl animate-pulse" role="img" aria-label="Noapte">🌙</span>;
+  if (isNight) return <Moon className={`${iconClass} text-slate-400 animate-pulse`} />;
   if (code === 0) return <Sun className={`${iconClass} text-yellow-500 hover:rotate-90`} />;
   if (code <= 3) return <CloudSun className={`${iconClass} text-blue-400`} />;
   if (code <= 48) return <Cloudy className={`${iconClass} text-slate-400`} />;
@@ -185,7 +185,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
                   const isCurrentHour = index === 0;
 
                   return (
-                    <div key={time} className={`flex flex-col items-center py-0.5 rounded-[4px] border ${isCurrentHour ? 'border-blue-200 bg-blue-50/30' : 'border-transparent hover:bg-slate-50'}`}>
+                    <div key={time} className={`flex flex-col items-center py-1 rounded-[4px] border ${isCurrentHour ? 'border-blue-200 bg-blue-50/30' : 'border-transparent hover:bg-slate-50'}`}>
                       <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">{hour}:00</span>
                       <div className="mb-0.5 transform scale-[0.75]">
                         {getWeatherIcon(weather.hourly.weather_code[index], isNight)}
@@ -213,7 +213,7 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 grid-flow-row">
               {ORASE_PRINCIPALE.map(oras => (
-                <a key={oras} href={`/vreme/${oras.toLowerCase().replace(/\s+/g, '-')}`} className="text-[9px] font-bold text-slate-500 hover:text-blue-600 truncate bg-slate-50 hover:bg-white px-2 py-0.5 rounded-[2px] border border-transparent hover:border-blue-100 transition-all">
+                <a key={oras} href={`/vreme/${oras.toLowerCase().replace(/\s+/g, '-')}`} className="text-[9px] font-bold text-slate-500 hover:text-blue-600 truncate bg-slate-50 hover:bg-white px-2 py-1.5 rounded-[2px] border border-transparent hover:border-blue-100 transition-all">
                   {oras}
                 </a>
               ))}
