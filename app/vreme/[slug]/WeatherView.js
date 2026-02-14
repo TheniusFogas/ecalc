@@ -38,175 +38,167 @@ export default function WeatherView({ weather, nearbyPlaces, ORASE_PRINCIPALE, M
     <div className="space-y-4">
       {/* Animated Background Definition */}
       <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+        
+        .weather-module {
+          font-family: 'Outfit', sans-serif !important;
+        }
         @keyframes subtle-drift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        @keyframes float-slow {
-          0% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.1; }
-          50% { transform: translateY(-20px) rotate(8deg) scale(1.1); opacity: 0.2; }
-          100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.1; }
-        }
         .md3-card-light {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          border: 1px solid #f1f5f9;
         }
         .text-md3-navy {
-          color: #0f172a;
+          color: #1e293b;
         }
-        .font-condensed-tall {
-           transform: scaleY(1.2) translateY(-2%);
-           display: inline-block;
-           font-weight: 200;
-           letter-spacing: -0.05em;
+        .temp-display {
+          font-weight: 300;
+          letter-spacing: -0.05em;
         }
       `}</style>
 
-      {/* Search Bar - MD3 Compact */}
-      <div className="bg-white p-1 rounded-[6px] shadow-sm border border-slate-200 flex gap-1 mb-4">
-        <label htmlFor="city-search" className="sr-only">Cauta localitate</label>
-        <input
-          id="city-search"
-          type="text"
-          value={cityInput}
-          onChange={(e) => setCityInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Cauta alt oras..."
-          className="flex-1 px-4 outline-none font-medium text-slate-700 placeholder-slate-400 text-sm"
-        />
-        <button
-          onClick={handleSearch}
-          aria-label="Cauta"
-          className="bg-blue-600 text-white px-4 py-1.5 rounded-[4px] font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 text-xs"
-        >
-          <Search className="h-3.5 w-3.5" />
-          <span>Cauta</span>
-        </button>
-      </div>
+      <div className="weather-module space-y-4">
+        {/* Search Bar - MD3 Compact */}
+        <div className="bg-white p-1 rounded-[6px] shadow-sm border border-slate-100 flex gap-1 mb-4">
+          <label htmlFor="city-search" className="sr-only">Cauta localitate</label>
+          <input
+            id="city-search"
+            type="text"
+            value={cityInput}
+            onChange={(e) => setCityInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="Cauta alt oras..."
+            className="flex-1 px-4 outline-none font-medium text-slate-700 placeholder-slate-400 text-sm"
+          />
+          <button
+            onClick={handleSearch}
+            aria-label="Cauta"
+            className="bg-blue-600 text-white px-4 py-1.5 rounded-[4px] font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 text-xs"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span>Cauta</span>
+          </button>
+        </div>
 
-      {/* Main Dashboard Overhaul */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left: Main Card - High Contrast MD3 Light */}
-        <div className="lg:col-span-7 rounded-[6px] p-6 md3-card-light flex flex-col min-h-[340px] shadow-sm relative overflow-hidden">
-
-          <div className="relative z-10 flex flex-col h-full">
-            {/* Top Row: Location & Status */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h1 className="text-4xl font-black mb-0.5 tracking-tighter uppercase text-md3-navy">{weather.cityName}</h1>
-                <div className="flex items-center gap-2">
-                  <div className="h-0.5 w-4 bg-blue-600 rounded-full"></div>
-                  <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">
-                    JUDETUL {weather.region} • {currentYear}
-                  </p>
+        {/* Main Dashboard Overhaul */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Main Card - Split Layout */}
+          <div className="lg:col-span-8 rounded-[6px] p-8 md3-card-light shadow-sm relative overflow-hidden flex flex-col min-h-[440px]">
+            <div className="relative z-10 flex flex-col h-full">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-10">
+                <div>
+                  <h1 className="text-5xl font-extrabold mb-1 tracking-tight uppercase text-slate-900">{weather.cityName}</h1>
+                  <div className="flex items-center gap-2">
+                    <div className="h-0.5 w-6 bg-blue-600 rounded-full"></div>
+                    <p className="text-slate-400 font-bold text-[11px] uppercase tracking-[0.2em]">
+                      JUDETUL {weather.region} • {currentYear}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                <span className="text-[9px] font-black tracking-widest uppercase flex items-center gap-1.5 text-blue-700">
+                <div className="bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse"></div>
-                  SISTEM ACTIV
-                </span>
-              </div>
-            </div>
-
-            {/* Middle Row: Temp & 12 Indicators */}
-            <div className="grid grid-cols-12 gap-6 items-center flex-grow">
-              {/* Left Column: Degrees */}
-              <div className="col-span-12 md:col-span-5 flex flex-col">
-                <div className="relative mb-2">
-                  <span className="text-9xl leading-none font-condensed-tall text-md3-navy">
-                    {currentTemp}°
-                  </span>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-blue-700">SISTEM ACTIV</span>
                 </div>
-                <div className="space-y-0.5">
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    PROGNOZĂ: {Math.round(weather.current.apparent_temperature)}°C RealFeel
-                  </p>
-                  <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                    <span className="flex items-center gap-1">MIN: {Math.round(weather.daily.temperature_2m_min[0])}°</span>
-                    <span className="flex items-center gap-1">MAX: {Math.round(weather.daily.temperature_2m_max[0])}°</span>
+              </div>
+
+              {/* Split Content */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center flex-grow">
+                {/* Left: Temp & Basic Info */}
+                <div className="md:col-span-5 flex flex-col justify-center border-r border-slate-50 pr-8">
+                  <div className="relative mb-6">
+                    <span className="text-[140px] leading-none temp-display text-slate-900 block translate-x-[-10px]">
+                      {currentTemp}°
+                    </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Right Column: 12 Indicators - Clean, No boxes */}
-              <div className="col-span-12 md:col-span-7 grid grid-cols-3 gap-x-2 gap-y-4">
-                {[
-                  { l: 'Vânt', v: `${weather.current.wind_speed_10m} km/h`, i: Wind },
-                  { l: 'Umiditate', v: `${weather.current.relative_humidity_2m}%`, i: Droplets },
-                  { l: 'UV Max', v: weather.daily.uv_index_max[0], i: Sun },
-                  { l: 'Aer (AQI)', v: weather.hourly.pm10[0] > 50 ? 'Moderat' : 'Excelent', i: Gauge },
-                  { l: 'Presiune', v: `${Math.round(weather.current.surface_pressure)}hPa`, i: Gauge },
-                  { l: 'Sanse Pl.', v: `${weather.daily.precipitation_probability_max[0]}%`, i: Umbrella },
-                  { l: 'Vizibilitate', v: `${weather.current.visibility / 1000}km`, i: Eye },
-                  { l: 'Punct Rouă', v: `${Math.round(weather.current.dew_point_2m)}°`, i: Droplets },
-                  { l: 'Noros', v: `${weather.current.cloud_cover}%`, i: Cloud },
-                  { l: 'Precipitații', v: `${weather.daily.precipitation_sum[0]}mm`, i: CloudRain },
-                  { l: 'Meteo Max', v: `${Math.round(weather.daily.temperature_2m_max[0])}°`, i: ThermometerSun },
-                  { l: 'Valuri', v: '0.4m', i: Waves },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <item.i className="h-3.5 w-3.5 text-blue-500" />
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{item.l}</span>
+                  <div className="space-y-4">
+                    <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.15em] leading-relaxed">
+                      PROGNOZĂ: {Math.round(weather.current.apparent_temperature)}°C REALFEEL
+                    </p>
+                    <div className="flex items-center gap-4 text-[11px] font-black text-slate-600 uppercase tracking-widest">
+                      <span className="opacity-40">MIN: {Math.round(weather.daily.temperature_2m_min[0])}°</span>
+                      <span className="opacity-40">MAX: {Math.round(weather.daily.temperature_2m_max[0])}°</span>
                     </div>
-                    <p className="text-[12px] font-black text-md3-navy leading-tight">{item.v}</p>
+                    {/* Sunrise/Sunset at bottom of left column */}
+                    <div className="flex gap-8 pt-4">
+                      <div className="flex items-center gap-3">
+                        <Sunrise className="h-4 w-4 text-orange-400" />
+                        <div>
+                          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">RĂSĂRIT</p>
+                          <p className="text-xs font-black text-slate-800">{formatTime(weather.daily.sunrise?.[0])}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Sunset className="h-4 w-4 text-blue-400" />
+                        <div>
+                          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">APUS</p>
+                          <p className="text-xs font-black text-slate-800">{formatTime(weather.daily.sunset?.[0])}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom Row: Sunrise/Sunset - Flat icons, no circles */}
-            <div className="mt-4 pt-4 border-t border-slate-200 flex gap-8">
-              <div className="flex items-center gap-3">
-                <Sunrise className="h-5 w-5 text-orange-400" />
-                <div>
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Răsărit</p>
-                  <p className="text-sm font-black text-md3-navy">{formatTime(weather.daily.sunrise?.[0])}</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Sunset className="h-5 w-5 text-blue-400" />
-                <div>
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Apus</p>
-                  <p className="text-sm font-black text-md3-navy">{formatTime(weather.daily.sunset?.[0])}</p>
+
+                {/* Right: 12 Indicators */}
+                <div className="md:col-span-7 grid grid-cols-3 gap-x-6 gap-y-10">
+                  {[
+                    { l: 'Vânt', v: `${weather.current.wind_speed_10m} km/h`, i: Wind },
+                    { l: 'Umiditate', v: `${weather.current.relative_humidity_2m}%`, i: Droplets },
+                    { l: 'UV Max', v: weather.daily.uv_index_max[0], i: Sun },
+                    { l: 'Aer (AQI)', v: weather.hourly.pm10[0] > 50 ? 'Moderat' : 'Excelent', i: Gauge },
+                    { l: 'Presiune', v: `${Math.round(weather.current.surface_pressure)}hPa`, i: Activity },
+                    { l: 'Sanse Pl.', v: `${weather.daily.precipitation_probability_max[0]}%`, i: Umbrella },
+                    { l: 'Vizibilitate', v: `${weather.current.visibility / 1000}km`, i: Eye },
+                    { l: 'Punct Rouă', v: `${Math.round(weather.current.dew_point_2m)}°`, i: Droplets },
+                    { l: 'Noros', v: `${weather.current.cloud_cover}%`, i: Cloudy },
+                    { l: 'Precipitații', v: `${weather.daily.precipitation_sum[0]}mm`, i: CloudRain },
+                    { l: 'Meteo Max', v: `${Math.round(weather.daily.temperature_2m_max[0])}°`, i: ThermometerSun },
+                    { l: 'Valuri', v: '0.4m', i: Waves },
+                  ].map((item, i) => (
+                    <div key={i} className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <item.i className="h-4 w-4 text-blue-600 opacity-80" />
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">{item.l}</span>
+                      </div>
+                      <p className="text-[17px] font-black text-slate-800 tracking-tight leading-none">{item.v}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right: Hourly Forecast - Extremely Compact */}
-        <div className="lg:col-span-5 flex flex-col">
-          <section className="bg-white p-4 rounded-[6px] border border-slate-200 shadow-sm h-full flex flex-col" aria-labelledby="hourly-forecast">
-            <h2 id="hourly-forecast" className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-slate-50 pb-3">
-              <div className="p-1.5 bg-blue-100 rounded-full"><Gauge className="h-3.5 w-3.5 text-blue-600" /></div>
-              EVOLUȚIE ORARĂ (URMĂTOARELE 24H)
-            </h2>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-1 gap-y-1.5 flex-grow content-start overflow-hidden">
-              {weather.hourly.time.slice(0, 24).map((time, index) => {
-                const hour = new Date(time).getHours();
-                const temp = Math.round(weather.hourly.temperature_2m[index]);
-                const isNight = hour < 6 || hour > 20;
-                const isCurrentHour = index === 0;
+          {/* Right: Hourly Forecast */}
+          <div className="lg:col-span-4">
+            <section className="bg-white p-6 rounded-[6px] border border-slate-100 shadow-sm h-full flex flex-col">
+              <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.15em] mb-10 flex items-center gap-3">
+                <div className="p-1.5 bg-blue-50 rounded-full"><Activity className="h-4 w-4 text-blue-600" /></div>
+                EVOLUȚIE ORARĂ (URMĂTOARELE 24H)
+              </h2>
+              <div className="grid grid-cols-4 gap-x-2 gap-y-6 flex-grow content-start">
+                {weather.hourly.time.slice(0, 24).map((time, index) => {
+                  const hour = new Date(time).getHours();
+                  const tempValue = Math.round(weather.hourly.temperature_2m[index]);
+                  const isNight = hour < 6 || hour > 20;
+                  const isCurrentHour = index === 0;
 
-                return (
-                  <div key={time} className={`flex flex-col items-center py-2 rounded-[2px] transition-all duration-200 ${isCurrentHour ? 'bg-blue-600 text-white shadow-lg scale-105 z-10' : 'bg-slate-50 border border-slate-100 hover:bg-white hover:border-blue-200'}`}>
-                    <span className={`text-[8px] font-black uppercase tracking-tighter mb-1 ${isCurrentHour ? 'text-blue-100' : 'text-slate-400'}`}>{hour}:00</span>
-                    <div className={`mb-1 transform scale-[0.7] ${isCurrentHour ? 'animate-pulse' : 'opacity-60 grayscale-[50%]'}`}>
-                      {getWeatherIcon(weather.hourly.weather_code[index], isNight)}
+                  return (
+                    <div key={time} className={`flex flex-col items-center py-4 rounded-[4px] border ${isCurrentHour ? 'border-blue-200 bg-blue-50/30' : 'border-transparent hover:bg-slate-50'}`}>
+                      <span className="text-[8px] font-black text-slate-400 uppercase mb-3">{hour}:00</span>
+                      <div className="mb-3 transform scale-110">
+                        {getWeatherIcon(weather.hourly.weather_code[index], isNight)}
+                      </div>
+                      <span className="text-[16px] font-extrabold text-slate-900">{tempValue}°</span>
                     </div>
-                    <span className={`text-xs font-black leading-none ${isCurrentHour ? 'text-white' : 'text-slate-800'}`}>{temp}°</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-              <span>Interval: 1 Oră</span>
-              <span>Actualizat Acum</span>
-            </div>
-          </section>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
         </div>
       </div>
 
