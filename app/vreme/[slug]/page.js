@@ -3,18 +3,11 @@ import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
 import WeatherView from './WeatherView';
 
-import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS } from '@/lib/resorts-data';
+import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS, ROMANIAN_MOUNTAIN_PEAKS } from '@/lib/resorts-data';
 
 const ORASE_PRINCIPALE = ['Alba Iulia', 'Alexandria', 'Arad', 'Bacau', 'Baia Mare', 'Bistrita', 'Botosani', 'Braila', 'Brasov', 'Bucuresti', 'Buzau', 'Calarasi', 'Cluj-Napoca', 'Constanta', 'Craiova', 'Deva', 'Drobeta-Turnu Severin', 'Focsani', 'Galati', 'Giurgiu', 'Iasi', 'Miercurea Ciuc', 'Oradea', 'Piatra Neamt', 'Pitesti', 'Ploiesti', 'Ramnicu Valcea', 'Resita', 'Satu Mare', 'Sfantu Gheorghe', 'Sibiu', 'Slatina', 'Slobozia', 'Suceava', 'Targoviste', 'Targu Jiu', 'Targu Mures', 'Timisoara', 'Tulcea', 'Vaslui', 'Zalau'].sort();
 
-const VARFURI_MUNTE = [
-  { name: 'Varful Moldoveanu', slug: 'varful-moldoveanu' },
-  { name: 'Varful Negoiu', slug: 'varful-negoiu' },
-  { name: 'Varful Omu', slug: 'varful-omu' },
-  { name: 'Varful Peleaga', slug: 'varful-peleaga' },
-  { name: 'Varful Toaca', slug: 'varful-toaca' },
-  { name: 'Sarmizegetusa', slug: 'sarmizegetusa' }
-];
+const VARFURI_MUNTE = ROMANIAN_MOUNTAIN_PEAKS;
 
 // SEO: Generam titlu si descriere unica pentru fiecare oras/sat
 export async function generateMetadata({ params }) {
