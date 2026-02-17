@@ -320,428 +320,241 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <div className="grid lg:grid-cols-4 gap-4">
-              {/* Module Selector */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Module Fiscale</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {[
-                    { id: 'salary', label: 'Salarii', icon: '💼' },
-                    { id: 'pfa', label: 'PFA', icon: '👤' },
-                    { id: 'medical_leave', label: 'Concediu Medical', icon: '🏥' },
-                    { id: 'car_tax', label: 'Impozit Auto', icon: '🚗' },
-                    { id: 'real_estate', label: 'Imobiliare', icon: '🏠' },
-                    { id: 'efactura', label: 'e-Factura', icon: '📄' },
-                    { id: 'flight', label: 'Zboruri EU261', icon: '✈️' },
-                  ].map((module) => (
-                    <Button
-                      key={module.id}
-                      variant={activeModule === module.id ? 'default' : 'outline'}
-                      className="w-full justify-start"
-                      onClick={() => setActiveModule(module.id)}
-                    >
-                      <span className="mr-2">{module.icon}</span>
-                      {module.label}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
+            <div className="space-y-6">
+              {/* Module Selector - Compact Horizontal */}
+              <div className="bg-white p-2 rounded-lg border shadow-sm flex flex-wrap gap-2">
+                {[
+                  { id: 'salary', label: 'Salarii', icon: '💼' },
+                  { id: 'pfa', label: 'PFA', icon: '👤' },
+                  { id: 'medical_leave', label: 'Concediu Medical', icon: '🏥' },
+                  { id: 'car_tax', label: 'Impozit Auto', icon: '🚗' },
+                  { id: 'real_estate', label: 'Imobiliare', icon: '🏠' },
+                  { id: 'efactura', label: 'e-Factura', icon: '📄' },
+                  { id: 'flight', label: 'Zboruri EU261', icon: '✈️' },
+                ].map((module) => (
+                  <Button
+                    key={module.id}
+                    variant={activeModule === module.id ? 'default' : 'ghost'}
+                    size="sm"
+                    className={`flex items-center gap-2 ${activeModule === module.id ? 'shadow-sm' : 'text-slate-600'}`}
+                    onClick={() => setActiveModule(module.id)}
+                  >
+                    <span>{module.icon}</span>
+                    {module.label}
+                  </Button>
+                ))}
+              </div>
 
               {/* Module Settings */}
-              <div className="lg:col-span-3">
+              <div className="w-full">
                 {activeModule === 'salary' && fiscalRules.salary && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Reguli Fiscale - Salarii {selectedYear}</CardTitle>
-                      <CardDescription>
-                        Configurare CAS, CASS, Impozit, Deduceri și facilități fiscale
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Basic Rates */}
-                      <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          Rate Standard
-                          <a href="https://www.anaf.ro" target="_blank" rel="noopener" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3" />
-                            Verifică pe ANAF
-                          </a>
-                        </h3>
-                        <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-6">
+                    {/* CARD 1: RATE STANDARD */}
+                    <Card>
+                      <CardHeader className="bg-slate-50 border-b pb-3">
+                        <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                          📊 Rate Standard de Taxare
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid md:grid-cols-4 gap-4">
                           <div>
-                            <Label>CAS - Pensii (%)</Label>
+                            <Label>CAS (Pensii) %</Label>
                             <Input
                               type="number"
                               step="0.01"
                               value={fiscalRules.salary.cas_rate || 25}
                               onChange={(e) => updateFiscalField('salary', 'cas_rate', parseFloat(e.target.value))}
+                              className="font-semibold"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Contribuție asigurări sociale (standard: 25%)</p>
                           </div>
                           <div>
-                            <Label>Pilon 2 - Pensie Privată (%)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={fiscalRules.salary.pilon2_rate || 4.75}
-                              onChange={(e) => updateFiscalField('salary', 'pilon2_rate', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Procent din CAS către pensie privată (4.75%)</p>
-                          </div>
-                          <div>
-                            <Label>CASS - Sănătate (%)</Label>
+                            <Label>CASS (Sănătate) %</Label>
                             <Input
                               type="number"
                               step="0.01"
                               value={fiscalRules.salary.cass_rate || 10}
                               onChange={(e) => updateFiscalField('salary', 'cass_rate', parseFloat(e.target.value))}
+                              className="font-semibold"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Contribuție asigurări sănătate (standard: 10%)</p>
                           </div>
                           <div>
-                            <Label>Impozit pe Venit (%)</Label>
+                            <Label>Impozit Venit %</Label>
                             <Input
                               type="number"
                               step="0.01"
                               value={fiscalRules.salary.income_tax_rate || 10}
                               onChange={(e) => updateFiscalField('salary', 'income_tax_rate', parseFloat(e.target.value))}
+                              className="font-semibold"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Impozit venit net (standard: 10%)</p>
                           </div>
                           <div>
-                            <Label>CAM - Muncă (%)</Label>
+                            <Label>CAM (Muncă) %</Label>
                             <Input
                               type="number"
                               step="0.01"
                               value={fiscalRules.salary.cam_rate || 2.25}
                               onChange={(e) => updateFiscalField('salary', 'cam_rate', parseFloat(e.target.value))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Contribuție asig. accidente muncă (standard: 2.25%)</p>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Deductions */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Deduceri Personale</h3>
-                        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4">
-                          <p className="text-sm text-blue-900">
-                            <strong>Formula Regresivă:</strong> Deducerea de bază se calculează automat:
-                            <br />• Brut ≤ Salariu Minim: Deducere = Maxim ({fiscalRules.salary.personal_deduction_base || 510} RON)
-                            <br />• Brut între {fiscalRules.salary.minimum_salary || 4050} - {(fiscalRules.salary.minimum_salary || 4050) + (fiscalRules.salary.personal_deduction_range || 2000)}: Regresiv
-                            <br />• Brut &gt; {(fiscalRules.salary.minimum_salary || 4050) + (fiscalRules.salary.personal_deduction_range || 2000)} RON: Deducere = 0
-                          </p>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <Label className="text-blue-700 font-bold">Procent Deducere (%)</Label>
+                          <div className="md:col-span-4 bg-blue-50 p-3 rounded text-sm text-blue-800 flex gap-4">
+                            <span>ℹ️ <strong>Pilon 2</strong> inclus în CAS: {fiscalRules.salary.pilon2_rate || 4.75}%</span>
                             <Input
                               type="number"
-                              value={fiscalRules.salary.personal_deduction_percent || 0}
-                              onChange={(e) => updateFiscalField('salary', 'personal_deduction_percent', parseFloat(e.target.value))}
-                              className="border-blue-300 bg-blue-50"
+                              className="w-20 inline-block h-6 p-1 text-xs bg-white"
+                              value={fiscalRules.salary.pilon2_rate || 4.75}
+                              onChange={(e) => updateFiscalField('salary', 'pilon2_rate', parseFloat(e.target.value))}
                             />
-                            <p className="text-xs text-blue-600 mt-1">
-                              Setează procentul din Salariul Minim (ex: 20)
-                            </p>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded border border-slate-200">
-                            <Label className="text-slate-500">Deducere Aplicată (Real-Time)</Label>
-                            <div className="text-lg font-bold text-slate-800 mt-1">
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* CARD 2: DEDUCERI PERSONALE */}
+                    <Card>
+                      <CardHeader className="bg-slate-50 border-b pb-3">
+                        <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                          users Deduceri Personale (Regresiv)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-blue-700 font-bold">Procent Deducere (%)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.personal_deduction_percent || 0}
+                                onChange={(e) => updateFiscalField('salary', 'personal_deduction_percent', parseFloat(e.target.value))}
+                                className="border-blue-300 bg-blue-50 font-bold text-lg"
+                              />
+                              <p className="text-xs text-slate-500 mt-1">Procent din Salariul Minim (ex: 20%)</p>
+                            </div>
+                            <div>
+                              <Label>Interval Regresiv (RON)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.personal_deduction_range || 2000}
+                                onChange={(e) => updateFiscalField('salary', 'personal_deduction_range', parseFloat(e.target.value))}
+                              />
+                              <p className="text-xs text-slate-500 mt-1">Peste SalMin (ex: 2000 RON)</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-100 p-4 rounded-lg flex flex-col justify-center items-center text-center border border-slate-200">
+                            <Label className="text-slate-500 mb-2">Simulare Deducere Maximă</Label>
+                            <div className="text-3xl font-bold text-blue-600">
                               {Math.round((fiscalRules.salary.minimum_salary || 0) * ((fiscalRules.salary.personal_deduction_percent || 0) / 100))} RON
                             </div>
-                            <p className="text-xs text-slate-400 mt-0.5">
-                              = {fiscalRules.salary.minimum_salary} (Min) x {fiscalRules.salary.personal_deduction_percent}%
+                            <p className="text-xs text-slate-400 mt-2">
+                              Se aplică la Salariul Minim ({fiscalRules.salary.minimum_salary} RON)
                             </p>
                           </div>
-                          <div>
-                            <Label>Prag Regresiv (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.personal_deduction_range || 2000}
-                              onChange={(e) => updateFiscalField('salary', 'personal_deduction_range', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Interval peste SalMin (standard: 2000)</p>
-                          </div>
-                          <div>
-                            <Label>Deducere per Copil (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.child_deduction || 100}
-                              onChange={(e) => updateFiscalField('salary', 'child_deduction', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Fix, 100 RON/copil (nu regresiv)</p>
-                          </div>
-                          <div>
-                            <Label>Deducere Alte Persoane (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.dependent_deduction || 0}
-                              onChange={(e) => updateFiscalField('salary', 'dependent_deduction', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Deducere per persoană în întreținere (altele decât copii)</p>
-                          </div>
-                        </div>
-                      </div>
 
-                      {/* Minimum Salary & Thresholds */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Praguri și Salarii Minime</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Salariu Minim Brut (RON/lună)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.minimum_salary || 4050}
-                              onChange={(e) => updateFiscalField('salary', 'minimum_salary', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim pe economie (4050 RON în 2026)</p>
-                          </div>
-                          <div>
-                            <Label>Valoare Max Tichet Masă (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.meal_voucher_max || 40}
-                              onChange={(e) => updateFiscalField('salary', 'meal_voucher_max', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Valoare maximă tichet de masă neimpozabil</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* IT Sector Facilities */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Facilitate Fiscală IT</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.it_tax_exempt || false}
-                                onChange={(e) => updateFiscalField('salary', 'it_tax_exempt', e.target.checked)}
-                                className="h-4 w-4"
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Deducere Copil (RON)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.child_deduction || 100}
+                                onChange={(e) => updateFiscalField('salary', 'child_deduction', parseFloat(e.target.value))}
                               />
-                              Scutire Impozit IT Activă
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Permite scutirea de impozit pentru sector IT</p>
+                            </div>
+                            <div>
+                              <Label>Deducere Alte Persoane (RON)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.dependent_deduction || 0}
+                                onChange={(e) => updateFiscalField('salary', 'dependent_deduction', parseFloat(e.target.value))}
+                              />
+                            </div>
                           </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* CARD 3: SALARIU MINIM & VALORI GLOBALE */}
+                    <Card>
+                      <CardHeader className="bg-slate-50 border-b pb-3">
+                        <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                          💰 Salariu Minim & Valori Globale
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="p-4 bg-yellow-50 rounded border border-yellow-200">
+                            <Label className="text-yellow-800 font-bold mb-2 block">Salariu Minim Brut (Economie)</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.minimum_salary || 4050}
+                                onChange={(e) => updateFiscalField('salary', 'minimum_salary', parseFloat(e.target.value))}
+                                className="text-xl font-bold border-yellow-400"
+                              />
+                              <span className="font-bold text-yellow-700">RON</span>
+                            </div>
+                            <p className="text-xs text-yellow-700 mt-2">Baza de calcul pentru deduceri și plafoane.</p>
+                          </div>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Tichet Masă Maxim (RON/zi)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.meal_voucher_max || 40}
+                                onChange={(e) => updateFiscalField('salary', 'meal_voucher_max', parseFloat(e.target.value))}
+                              />
+                            </div>
+                            <div>
+                              <Label>Diurnă Maximă (RON/zi)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.meal_allowance_max || 70}
+                                onChange={(e) => updateFiscalField('salary', 'meal_allowance_max', parseFloat(e.target.value))}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* CARD 4: SECTOR IT */}
+                    <Card className="border-l-4 border-l-purple-500">
+                      <CardHeader className="bg-purple-50 border-b pb-3">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-bold text-purple-900 flex items-center gap-2">
+                            💻 Facilități Sector IT
+                          </CardTitle>
+                          <div className="flex items-center gap-2 bg-white px-3 py-1 rounded border border-purple-200 shadow-sm">
+                            <Input
+                              type="checkbox"
+                              checked={fiscalRules.salary.it_tax_exempt || false}
+                              onChange={(e) => updateFiscalField('salary', 'it_tax_exempt', e.target.checked)}
+                              className="h-4 w-4"
+                            />
+                            <Label className="cursor-pointer font-semibold text-purple-700">Activare Scutire</Label>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid md:grid-cols-3 gap-6">
                           <div>
-                            <Label>Prag Scutire IT (RON brut/lună)</Label>
+                            <Label className="text-purple-800 font-semibold">Prag Scutire Impozit (RON)</Label>
                             <Input
                               type="number"
                               value={fiscalRules.salary.it_threshold || 10000}
                               onChange={(e) => updateFiscalField('salary', 'it_threshold', parseFloat(e.target.value))}
+                              className="border-purple-200 bg-purple-50 font-bold"
                               disabled={!fiscalRules.salary.it_tax_exempt}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Scutire impozit pentru primii X RON (10000 în 2026)</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Construction Sector */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Facilitate Fiscală Construcții/Agricultură</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>CAS Redus Construcții (%)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={fiscalRules.salary.construction_cas_rate || 21.25}
-                              onChange={(e) => updateFiscalField('salary', 'construction_cas_rate', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">CAS special pentru construcții (21.25%)</p>
+                            <p className="text-xs text-slate-500 mt-1">Venit scutit de impozit (Standard: 10.000)</p>
                           </div>
                           <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.construction_cass_exempt || false}
-                                onChange={(e) => updateFiscalField('salary', 'construction_cass_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Scutire CASS Construcții
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Scutire CASS pentru sectorul construcții</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visibility & UI Options */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Vizibilitate & UI</h3>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={fiscalRules.salary.show_year_comparison !== false}
-                            onChange={(e) => updateFiscalField('salary', 'show_year_comparison', e.target.checked)}
-                            className="h-4 w-4"
-                          />
-                          <Label>Afișează Comparație An Precedent (2025 vs 2026)</Label>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1 ml-6">
-                          Dacă este debifat, secțiunea "Comparație 2025 vs 2026" va fi ascunsă din calculator.
-                        </p>
-                      </div>
-
-                      {/* Sume Netaxabile și Beneficii */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Sume Netaxabile & Beneficii</h3>
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.untaxed_amount_enabled !== false}
-                                onChange={(e) => updateFiscalField('salary', 'untaxed_amount_enabled', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Sumă Netaxabilă Activă
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Aplică suma netaxabilă (ex: 300 RON)</p>
-                          </div>
-                          <div>
-                            <Label>Sumă Netaxabilă (RON/lună)</Label>
-                            <Label>Sumă Netaxabilă (RON/lună)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.untaxed_amount !== undefined ? fiscalRules.salary.untaxed_amount : 300}
-                              onChange={(e) => updateFiscalField('salary', 'untaxed_amount', parseFloat(e.target.value))}
-                              disabled={!fiscalRules.salary.untaxed_amount_enabled}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Se scade ÎNAINTE de CAS/CASS (300 în 2026)</p>
-                          </div>
-                          <div>
-                            <Label>Tichet Masă Max (RON/zi)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.meal_voucher_max || 40}
-                              onChange={(e) => updateFiscalField('salary', 'meal_voucher_max', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Valoare maximă neimpozabilă/zi</p>
-                          </div>
-                          <div>
-                            <Label>Prag Tichete Cadou (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.gift_voucher_threshold || 300}
-                              onChange={(e) => updateFiscalField('salary', 'gift_voucher_threshold', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Sub prag = 0 taxe; peste = 10% IV</p>
-                          </div>
-                          <div>
-                            <Label>Diurnă Max (RON/zi)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.meal_allowance_max || 70}
-                              onChange={(e) => updateFiscalField('salary', 'meal_allowance_max', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Diurnă neimpozabilă max (se adaugă direct la Net)</p>
-                          </div>
-                          <div>
-                            <Label>Abonament Medical Limită (EUR/an)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.medical_subscription_limit_eur || 400}
-                              onChange={(e) => updateFiscalField('salary', 'medical_subscription_limit_eur', parseFloat(e.target.value))}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Limită anuală deductibilă (400 EUR)</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Scutiri și Excepții */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Scutiri & Excepții Fiscale</h3>
-                        <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg mb-4">
-                          <p className="text-sm text-amber-900">
-                            <strong>⚠️ Importante:</strong> Aceste scutiri se aplică GLOBAL pentru toți utilizatorii care bifează condițiile respective în calculator.
-                          </p>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.disability_tax_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'disability_tax_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Scutire IV - Persoane cu Handicap
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Forțează Impozit pe Venit = 0% (indiferent de sector)</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.youth_exemption_enabled !== false}
-                                onChange={(e) => updateFiscalField('salary', 'youth_exemption_enabled', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Scutire IV - Tineri Sub 26 Ani
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Scutire IV pentru tineri (până la prag)</p>
-                          </div>
-                          <div>
-                            <Label>Vârstă Maximă Scutire Tineri</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.youth_exemption_age || 26}
-                              onChange={(e) => updateFiscalField('salary', 'youth_exemption_age', parseInt(e.target.value))}
-                              disabled={!fiscalRules.salary.youth_exemption_enabled}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Sub această vârstă = scutire (standard: 26)</p>
-                          </div>
-                          <div>
-                            <Label>Prag Maxim Scutire Tineri (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.youth_exemption_threshold || 6050}
-                              onChange={(e) => updateFiscalField('salary', 'youth_exemption_threshold', parseFloat(e.target.value))}
-                              disabled={!fiscalRules.salary.youth_exemption_enabled}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Venit maxim pentru scutire (SalMin + 2000)</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Sectoare Speciale - IT */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Sector IT - Configurare Scutiri</h3>
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.it_tax_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'it_tax_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Scutire IV în IT Activă
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Permite scutirea de impozit pentru sector IT</p>
-                          </div>
-                          <div>
-                            <Label>Prag Scutire IT (RON brut/lună)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.it_threshold || 10000}
-                              onChange={(e) => updateFiscalField('salary', 'it_threshold', parseFloat(e.target.value))}
-                              disabled={!fiscalRules.salary.it_tax_exempt}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Scutire IV pentru primii X RON (10000 în 2026)</p>
-                          </div>
-                          <div>
-                            <Label>Salariu Minim IT (RON/lună)</Label>
+                            <Label>Salariu Minim IT (RON)</Label>
                             <Input
                               type="number"
                               value={fiscalRules.salary.minimum_gross_it || 4050}
                               onChange={(e) => updateFiscalField('salary', 'minimum_gross_it', parseFloat(e.target.value))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în sectorul IT</p>
                           </div>
                           <div>
                             <Label className="flex items-center gap-2">
@@ -751,251 +564,265 @@ export default function AdminDashboard() {
                                 onChange={(e) => updateFiscalField('salary', 'it_pilon2_optional', e.target.checked)}
                                 className="h-4 w-4"
                               />
-                              Pilon 2 Optional în IT
+                              Pilon 2 Opțional
                             </Label>
-                            <p className="text-xs text-slate-500 mt-1">Dacă e bifat, utilizatorul poate alege să nu plătească Pilon 2</p>
+                            <p className="text-xs text-slate-500 mt-1">Angajatul poate renunța la Pilon 2</p>
                           </div>
                         </div>
-                        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mt-3">
-                          <p className="text-xs text-blue-900">
-                            <strong>Logică IT:</strong> Dacă Brut {'<'}= Prag: IV = 0%. Dacă Brut {'>'} Prag: IV se aplică doar pe (Brut - Prag).
-                          </p>
-                        </div>
-                      </div>
+                      </CardContent>
+                    </Card>
 
-                      {/* Sectoare Speciale - Construcții/Agricultură */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Sectoare Construcții & Agricultură</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>CAS Construcții (%)</Label>
+                    {/* CARD 5: SECTOARE CONSTRUCȚII & AGRICULTURĂ */}
+                    <Card className="border-l-4 border-l-orange-500">
+                      <CardHeader className="bg-orange-50 border-b pb-3">
+                        <CardTitle className="text-base font-bold text-orange-900 flex items-center gap-2">
+                          🏗️ Construcții & 🚜 Agricultură
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        {/* GENERAL THRESHOLD FOR THESE SECTORS */}
+                        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-6">
+                          <div className="flex gap-4 items-center">
+                            <Label className="text-orange-900 font-bold whitespace-nowrap">Prag Scutire General (RON):</Label>
                             <Input
                               type="number"
-                              step="0.01"
-                              value={fiscalRules.salary.construction_cas_rate || 21.25}
-                              onChange={(e) => updateFiscalField('salary', 'construction_cas_rate', parseFloat(e.target.value))}
+                              value={fiscalRules.salary.tax_exemption_threshold || 10000}
+                              onChange={(e) => updateFiscalField('salary', 'tax_exemption_threshold', parseFloat(e.target.value))}
+                              className="max-w-[150px] font-bold border-orange-300 bg-white"
                             />
-                            <p className="text-xs text-slate-500 mt-1">CAS redus pentru construcții (21.25%)</p>
+                            <span className="text-xs text-orange-700">Plafon venit brut până la care se aplică scutirile (10.000 RON).</span>
                           </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                          {/* CONSTRUCTII */}
+                          <div className="border p-4 rounded bg-slate-50">
+                            <h4 className="font-bold text-center mb-4 border-b pb-2">🏗️ Sector Construcții</h4>
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <Label>Scutire CASS</Label>
+                                <input
+                                  type="checkbox"
+                                  checked={fiscalRules.salary.construction_cass_exempt || false}
+                                  onChange={(e) => updateFiscalField('salary', 'construction_cass_exempt', e.target.checked)}
+                                  className="h-5 w-5"
+                                />
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <Label>Scutire Impozit</Label>
+                                <input
+                                  type="checkbox"
+                                  checked={fiscalRules.salary.construction_tax_exempt !== false}
+                                  onChange={(e) => updateFiscalField('salary', 'construction_tax_exempt', e.target.checked)}
+                                  className="h-5 w-5"
+                                />
+                              </div>
+                              <div>
+                                <Label>CAS Redus (%)</Label>
+                                <Input
+                                  type="number"
+                                  value={fiscalRules.salary.construction_cas_rate || 21.25}
+                                  onChange={(e) => updateFiscalField('salary', 'construction_cas_rate', parseFloat(e.target.value))}
+                                />
+                              </div>
+                              <div>
+                                <Label>Salariu Minim (RON)</Label>
+                                <Input
+                                  type="number"
+                                  value={fiscalRules.salary.minimum_gross_construction || 4582}
+                                  onChange={(e) => updateFiscalField('salary', 'minimum_gross_construction', parseFloat(e.target.value))}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* AGRICULTURA */}
+                          <div className="border p-4 rounded bg-green-50">
+                            <h4 className="font-bold text-center mb-4 border-b pb-2">🚜 Sector Agricultură</h4>
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <Label>Scutire Impozit</Label>
+                                <input
+                                  type="checkbox"
+                                  checked={fiscalRules.salary.agriculture_tax_exempt !== false}
+                                  onChange={(e) => updateFiscalField('salary', 'agriculture_tax_exempt', e.target.checked)}
+                                  className="h-5 w-5"
+                                />
+                              </div>
+                              <div>
+                                <Label>CAS Redus (%)</Label>
+                                <Input
+                                  type="number"
+                                  value={fiscalRules.salary.agriculture_cas_rate || 21.25}
+                                  onChange={(e) => updateFiscalField('salary', 'agriculture_cas_rate', parseFloat(e.target.value))}
+                                />
+                              </div>
+                              <div>
+                                <Label>Salariu Minim (RON)</Label>
+                                <Input
+                                  type="number"
+                                  value={fiscalRules.salary.minimum_gross_agriculture || 3436}
+                                  onChange={(e) => updateFiscalField('salary', 'minimum_gross_agriculture', parseFloat(e.target.value))}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* CARD 6: SUME NETAXABILE & BENEFICII */}
+                    <Card>
+                      <CardHeader className="bg-slate-50 border-b pb-3">
+                        <CardTitle className="text-base font-bold text-slate-800">
+                          ✨ Sume Netaxabile & Beneficii Extra
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="md:col-span-1 bg-green-50 p-4 rounded border border-green-200">
+                            <Label className="font-bold text-green-900 mb-2 block">Sumă Netaxabilă (200/300 RON)</Label>
+                            <div className="flex gap-2 mb-2">
                               <input
                                 type="checkbox"
-                                checked={fiscalRules.salary.construction_tax_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'construction_tax_exempt', e.target.checked)}
-                                className="h-4 w-4"
+                                checked={fiscalRules.salary.untaxed_amount_enabled !== false}
+                                onChange={(e) => updateFiscalField('salary', 'untaxed_amount_enabled', e.target.checked)}
+                                className="mt-1"
                               />
-                              Scutire IV Construcții (până la prag)
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Scutire IV pentru construcții similar IT</p>
-                          </div>
-                          <div>
-                            <Label>Salariu Minim Construcții (RON)</Label>
+                              <span className="text-sm">Activare facilitate</span>
+                            </div>
                             <Input
                               type="number"
-                              value={fiscalRules.salary.minimum_gross_construction || 4582}
-                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_construction', parseFloat(e.target.value))}
+                              value={fiscalRules.salary.untaxed_amount !== undefined ? fiscalRules.salary.untaxed_amount : 300}
+                              onChange={(e) => updateFiscalField('salary', 'untaxed_amount', parseFloat(e.target.value))}
+                              disabled={!fiscalRules.salary.untaxed_amount_enabled}
+                              className="font-bold"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în construcții</p>
                           </div>
-                          <div>
-                            <Label>CAS Agricultură (%)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={fiscalRules.salary.agriculture_cas_rate || 21.25}
-                              onChange={(e) => updateFiscalField('salary', 'agriculture_cas_rate', parseFloat(e.target.value))}
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Prag Tichete Cadou (RON)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.gift_voucher_threshold || 300}
+                                onChange={(e) => updateFiscalField('salary', 'gift_voucher_threshold', parseFloat(e.target.value))}
+                              />
+                            </div>
+                            <div>
+                              <Label>Subvenție Grădiniță (RON)</Label>
+                              <Input
+                                type="number"
+                                value={1500}
+                                disabled={true}
+                                className="bg-slate-100"
+                              />
+                              <span className="text-xs text-slate-400">Plafonat legal (1500 RON/lună)</span>
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Abonament Medical (EUR/an)</Label>
+                              <Input
+                                type="number"
+                                value={fiscalRules.salary.medical_subscription_limit_eur || 400}
+                                onChange={(e) => updateFiscalField('salary', 'medical_subscription_limit_eur', parseFloat(e.target.value))}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* CARD 7: CONCEDIU MEDICAL & PART-TIME */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader className="bg-slate-50 border-b pb-3">
+                          <CardTitle className="text-base font-bold text-slate-800">
+                            🏥 Concediu Medical (CM)
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
+                            <Label>Calcul CM Activat</Label>
+                            <input
+                              type="checkbox"
+                              checked={fiscalRules.salary.medical_leave_calculation_enabled !== false}
+                              onChange={(e) => updateFiscalField('salary', 'medical_leave_calculation_enabled', e.target.checked)}
+                              className="h-5 w-5"
                             />
-                            <p className="text-xs text-slate-500 mt-1">CAS redus pentru agricultură (21.25%)</p>
                           </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.agriculture_tax_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'agriculture_tax_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Scutire IV Agricultură
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Scutire IV pentru agricultură</p>
-                          </div>
-                          <div>
-                            <Label>Salariu Minim Agricultură (RON)</Label>
-                            <Input
-                              type="number"
-                              value={fiscalRules.salary.minimum_gross_agriculture || 3436}
-                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_agriculture', parseFloat(e.target.value))}
+                          <div className="flex justify-between items-center">
+                            <Label>CM Scutit de CASS (Indemniz.)</Label>
+                            <input
+                              type="checkbox"
+                              checked={fiscalRules.salary.medical_leave_cass_exempt !== false}
+                              onChange={(e) => updateFiscalField('salary', 'medical_leave_cass_exempt', e.target.checked)}
+                              className="h-5 w-5"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim brut în agricultură</p>
                           </div>
-                        </div>
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4 mt-4 border-t pt-4">
-                        <div className="md:col-span-2">
-                          <Label>Prag General Scutiri (Construcții, Agricultură) - RON</Label>
-                          <Input
-                            type="number"
-                            value={fiscalRules.salary.tax_exemption_threshold || 10000}
-                            onChange={(e) => updateFiscalField('salary', 'tax_exemption_threshold', parseFloat(e.target.value))}
-                            className="font-bold border-green-300 bg-green-50"
-                          />
-                          <p className="text-xs text-green-700 mt-1">
-                            Plafon venit brut până la care se aplică scutirile (Standard: 10.000 RON).
-                            <strong>Notă:</strong> Pentru IT, modificați separat în secțiunea IT.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Concediu Medical */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Concediu Medical (CM)</h3>
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.medical_leave_calculation_enabled !== false}
-                                onChange={(e) => updateFiscalField('salary', 'medical_leave_calculation_enabled', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Calcul CM Activat
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Permite utilizatorilor să introducă zile CM</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.medical_leave_cass_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'medical_leave_cass_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              CM Scutit de CASS
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Indemnizație CM nu are CASS</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.medical_leave_cam_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'medical_leave_cam_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              CM Scutit de CAM
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Indemnizație CM nu are CAM</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Part-Time Suprataxare */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Suprataxare Part-Time</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.part_time_overtax_enabled !== false}
-                                onChange={(e) => updateFiscalField('salary', 'part_time_overtax_enabled', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Suprataxare Part-Time Activă
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Angajatorul plătește diferența până la salariu minim</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.part_time_minor_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'part_time_minor_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Exceptați: Minori ({'<'} 18 ani)
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Sub 18 ani nu au suprataxare</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.part_time_student_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'part_time_student_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Exceptați: Studenți
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Studenți nu au suprataxare</p>
-                          </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.salary.part_time_pensioner_exempt !== false}
-                                onChange={(e) => updateFiscalField('salary', 'part_time_pensioner_exempt', e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                              Exceptați: Pensionari
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Pensionari nu au suprataxare</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Exchange Rate */}
-                      <div className="border-t pt-4">
-                        <h3 className="font-semibold mb-4">Curs Valutar EUR/RON</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Curs EUR (Manual Override)</Label>
-                            <Input
-                              type="number"
-                              step="0.0001"
-                              value={fiscalRules.exchange_rate?.eur || 5.0923}
-                              onChange={(e) => {
-                                setFiscalRules({
-                                  ...fiscalRules,
-                                  exchange_rate: {
-                                    ...fiscalRules.exchange_rate,
-                                    eur: parseFloat(e.target.value),
-                                  },
-                                });
-                              }}
+                          <div className="flex justify-between items-center">
+                            <Label>CM Scutit de CAM</Label>
+                            <input
+                              type="checkbox"
+                              checked={fiscalRules.salary.medical_leave_cam_exempt !== false}
+                              onChange={(e) => updateFiscalField('salary', 'medical_leave_cam_exempt', e.target.checked)}
+                              className="h-5 w-5"
                             />
-                            <p className="text-xs text-slate-500 mt-1">1 EUR = X RON (pentru conversii și simulări)</p>
                           </div>
-                          <div>
-                            <Label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={fiscalRules.exchange_rate?.auto_update !== false}
-                                onChange={(e) => {
-                                  setFiscalRules({
-                                    ...fiscalRules,
-                                    exchange_rate: {
-                                      ...fiscalRules.exchange_rate,
-                                      auto_update: e.target.checked,
-                                    },
-                                  });
-                                }}
-                                className="h-4 w-4"
-                              />
-                              Actualizare Automată BNR
-                            </Label>
-                            <p className="text-xs text-slate-500 mt-1">Preia curs zilnic de la BNR dacă activat</p>
-                          </div>
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
 
-                      <Button onClick={updateFiscalRules} className="w-full" size="lg">
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvează Reguli Salarii {selectedYear}
-                      </Button>
-                    </CardContent>
-                  </Card>
+                      <Card>
+                        <CardHeader className="bg-slate-50 border-b pb-3">
+                          <CardTitle className="text-base font-bold text-slate-800">
+                            ⏳ Part-Time (Suprataxare)
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
+                            <Label>Suprataxare Activă</Label>
+                            <input
+                              type="checkbox"
+                              checked={fiscalRules.salary.part_time_overtax_enabled !== false}
+                              onChange={(e) => updateFiscalField('salary', 'part_time_overtax_enabled', e.target.checked)}
+                              className="h-5 w-5"
+                            />
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            <p className="mb-2 font-semibold">Categorii Exceptate:</p>
+                            <div className="flex flex-col gap-2 pl-2">
+                              <Label className="flex items-center gap-2 font-normal">
+                                <input type="checkbox" checked={fiscalRules.salary.part_time_minor_exempt !== false} onChange={(e) => updateFiscalField('salary', 'part_time_minor_exempt', e.target.checked)} />
+                                Minori ({'<'} 18 ani)
+                              </Label>
+                              <Label className="flex items-center gap-2 font-normal">
+                                <input type="checkbox" checked={fiscalRules.salary.part_time_student_exempt !== false} onChange={(e) => updateFiscalField('salary', 'part_time_student_exempt', e.target.checked)} />
+                                Studenți (până la 26 ani)
+                              </Label>
+                              <Label className="flex items-center gap-2 font-normal">
+                                <input type="checkbox" checked={fiscalRules.salary.part_time_pensioner_exempt !== false} onChange={(e) => updateFiscalField('salary', 'part_time_pensioner_exempt', e.target.checked)} />
+                                Pensionari
+                              </Label>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* BOTTOM ACTION BAR */}
+                    <Card className="border-2 border-blue-600 shadow-xl sticky bottom-4 z-10">
+                      <CardContent className="p-4 flex justify-between items-center bg-blue-50">
+                        <div>
+                          <h4 className="font-bold text-blue-900">Configurare Finalizată?</h4>
+                          <p className="text-xs text-blue-700">Salvează regulile pentru anul {selectedYear}.</p>
+                        </div>
+                        <Button onClick={updateFiscalRules} size="lg" className="px-8 shadow-lg">
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvează Modificările
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
                 )}
 
                 {/* PFA MODULE */}
