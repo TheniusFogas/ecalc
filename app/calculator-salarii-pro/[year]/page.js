@@ -34,6 +34,7 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
   const printRef = useRef(null);
 
   const [fiscalRules, setFiscalRules] = useState(null);
+  const [fiscalRulesHistory, setFiscalRulesHistory] = useState([]); // Store full history
   const [loading, setLoading] = useState(true);
 
   const pathname = usePathname();
@@ -315,37 +316,65 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
       const data = await response.json();
       // PLAN C: Map DB data to standard schema
       const mappedRules = mapDbToFiscalRules(data);
-      setFiscalRules(mappedRules);
 
-      // Set exchange rate with robust fallback hierarchy
-      // 1. Try BNR API if auto_update is ON
-      // 2. Fallback to Admin-defined fixed rate
-      // 3. Last resort safe default (1) to prevent Infinity, though Admin should provide a rate.
-
-      let rate = 0;
-      if (data.exchange_rate?.auto_update !== false) {
-        rate = await getBNRExchangeRate('EUR');
+      if (Array.isArray(mappedRules)) {
+        // If it's an array (History), store it and pick correct one for current month
+        setFiscalRulesHistory(mappedRules);
+        updateActiveRule(mappedRules, selectedMonth || new Date().getMonth() + 1);
+      } else {
+        // Legacy/Fallback (Single Object)
+        setFiscalRules(mappedRules);
+        setFiscalRulesHistory([mappedRules]);
       }
-
-      if (!rate || rate === 0) {
-        // Fallback to Admin value
-        rate = mappedRules.exchange_rate?.eur || 0;
-      }
-
-      if (rate === 0) {
-        // Absolute safety net to prevent DivisionByZero/Infinity in UI
-        console.warn('Exchange Rate missing from Admin and BNR. Defaulting to 1 to prevent crash.');
-        rate = 1;
-      }
-
-      setExchangeRate(rate);
 
       setLoading(false);
     } catch (error) {
+      console.error('Fiscal Load Error:', error);
       toast.error('Eroare la încărcarea regulilor fiscale');
       setLoading(false);
     }
   };
+
+  // Helper to pick the right rule for the selected month
+  const updateActiveRule = (history, month) => {
+    if (!history || history.length === 0) return;
+
+    const targetYear = selectedYear || year;
+    // Construct a comparable date string: YYYY-MM-DD (End of month or Start? Start is safer)
+    // Actually we need to check if the rule is effective BEFORE the target month starts/ends.
+    // Let's us start of month. If rule is effective 1st July, it applies to July.
+    const targetDateStr = `${targetYear}-${String(month).padStart(2, '0')}-01`;
+
+    // Sort descending by date (Newest first)
+    const sorted = [...history].sort((a, b) =>
+      new Date(b.effectiveDate || `${targetYear}-01-01`).getTime() -
+      new Date(a.effectiveDate || `${targetYear}-01-01`).getTime()
+    );
+
+    // Find first rule that has effectiveDate <= targetDate
+    const active = sorted.find(r => {
+      const eff = r.effectiveDate || `${targetYear}-01-01`;
+      return eff <= targetDateStr;
+    });
+
+    // If found, use it. If not (e.g. target is Jan, rule starts Mar), use the oldest one (fallback) 
+    // or arguably the previous year? For now, assume oldest valid rule for that year.
+    const ruleToUse = active || sorted[sorted.length - 1];
+
+    setFiscalRules(ruleToUse);
+
+    // Also update exchange rate if connected
+    if (ruleToUse.exchange_rate?.eur) {
+      setExchangeRate(ruleToUse.exchange_rate.eur);
+    }
+  };
+
+  // Re-select rule when month changes
+  useEffect(() => {
+    if (fiscalRulesHistory.length > 0) {
+      updateActiveRule(fiscalRulesHistory, selectedMonth);
+    }
+  }, [selectedMonth, fiscalRulesHistory]);
 
   const loadExchangeRate = async () => {
     // This is now handled in loadFiscalRules

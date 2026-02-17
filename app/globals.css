@@ -137,5 +137,75 @@ code {
     }
   body {
     @apply bg-background text-foreground;
-    }
+  }
+}
+
+/* PRINT STYLES */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide Navigation, Footer, Buttons, and UI elements */
+  nav, header, footer, aside, .no-print, button, .app-header, .breadcrumbs {
+    display: none !important;
+  }
+
+  /* Hide standard Next.js dev overlays if present */
+  nextjs-portal {
+    display: none !important;
+  }
+
+  /* Hide specific components by common patterns in this project */
+  [class*="NavigationHeader"], 
+  [class*="Footer"], 
+  [class*="Breadcrumbs"],
+  [class*="ChatFloat"] {
+    display: none !important;
+  }
+
+  /* Fix container width for print */
+  .container, .max-w-7xl, .max-w-5xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure text readability */
+  p, h1, h2, h3, h4, h5, h6, li, span, div {
+    color: #000 !important;
+    text-shadow: none !important;
+  }
+
+  /* Make sure inputs show their values cleanly */
+  input, select, textarea {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    appearance: none !important;
+    padding: 0 !important;
+  }
+
+  /* Hide placeholders/icons inside inputs if possible, generally browsers handle this ok */
+
+  /* Ensure cards look like documents */
+  .card, [class*="card"] {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    break-inside: avoid;
+  }
+
+  /* Hide the Calculate Button specifically if it has a generic class */
+  button[type="submit"], button[onClick] {
+    display: none !important;
+  }
 }

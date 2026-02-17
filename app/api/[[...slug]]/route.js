@@ -92,7 +92,7 @@ async function handleFiscalRulesGet(year, db) {
         .toArray();
 
     if (rules.length > 0) {
-        return NextResponse.json(rules[0]);
+        return NextResponse.json(rules);
     }
 
     return NextResponse.json({

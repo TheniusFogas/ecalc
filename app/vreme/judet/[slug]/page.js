@@ -32,7 +32,8 @@ export default async function CountyPage({ params }) {
     if (!countyInfo) return <div>Judetul nu a fost gasit.</div>;
 
     // Fetch weather for the county seat (capital)
-    const countyWeather = await getCountyWeather(countyInfo.capital);
+    const capitalName = countyInfo.capital || countyInfo.name;
+    const countyWeather = await getCountyWeather(capitalName);
 
     // Filter cities with a more robust check (normalized county name)
     const normalize = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
@@ -40,11 +41,19 @@ export default async function CountyPage({ params }) {
 
     const citiesInCounty = CITIES_ROMANIA.filter(c => {
         const normalizedItemCounty = normalize(c.county);
-        return normalizedItemCounty === slugCounty || normalizedItemCounty.includes(slugCounty) || c.county === countyInfo.name;
-    }).sort((a, b) => a.name.localeCompare(b.name));
+        // Robust matching for county names
+        return normalizedItemCounty === slugCounty ||
+            normalizedItemCounty.includes(slugCounty) ||
+            slugCounty.includes(normalizedItemCounty) ||
+            c.county === countyInfo.name;
+    }).sort((a, b) => {
+        // Sort by population if available, then by name
+        if (b.population !== a.population) return (b.population || 0) - (a.population || 0);
+        return a.name.localeCompare(b.name);
+    });
 
     // Categorize
-    const urbanCenters = citiesInCounty.filter(c => c.population > 8000 || c.name.toLowerCase().includes("oras") || c.name.toLowerCase().includes("municipiul"));
+    const urbanCenters = citiesInCounty.filter(c => c.population > 15000 || c.name === countyInfo.capital);
     const ruralLocalities = citiesInCounty.filter(c => !urbanCenters.includes(c));
 
     return (
