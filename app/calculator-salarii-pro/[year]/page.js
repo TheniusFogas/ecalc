@@ -312,7 +312,7 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
     try {
       // Folosește anul selectat din dropdown (dacă e diferit) sau anul din URL
       const targetYear = selectedYear || year;
-      const response = await fetch(`/api/fiscal-rules/${targetYear}`, { cache: 'no-store' });
+      const response = await fetch(`/api/fiscal-rules/${targetYear}?history=1`, { cache: 'no-store' });
       const data = await response.json();
       // PLAN C: Map DB data to standard schema
       const mappedRules = mapDbToFiscalRules(data);

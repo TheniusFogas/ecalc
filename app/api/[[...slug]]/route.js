@@ -84,15 +84,18 @@ async function initializeSettings(db) {
 }
 
 // GET /api/fiscal-rules/:year
-async function handleFiscalRulesGet(year, db) {
+async function handleFiscalRulesGet(year, db, request) {
     const requestedYear = parseInt(year);
     const rules = await db.collection('fiscal_rules')
         .find({ year: requestedYear })
         .sort({ effectiveDate: -1 })
         .toArray();
 
+    const url = new URL(request.url);
+    const showHistory = url.searchParams.get('history') === '1';
+
     if (rules.length > 0) {
-        return NextResponse.json(rules);
+        return NextResponse.json(showHistory ? rules : rules[0]);
     }
 
     return NextResponse.json({
@@ -272,7 +275,7 @@ export async function GET(request, { params }) {
             if (year === 'all' || !year) {
                 return handleFiscalRulesGetAll(db);
             }
-            return handleFiscalRulesGet(year, db);
+            return handleFiscalRulesGet(year, db, request);
         } else if (slug === 'fiscal-rules') {
             return handleFiscalRulesGetAll(db);
         } else if (slug.startsWith('holidays/')) {
