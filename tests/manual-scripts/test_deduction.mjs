@@ -46,4 +46,4 @@ if (resNoDeduction.incomeTax > resWithDeduction.incomeTax) {
     log(`❌ TEST FAILED: Impozitul NU a crescut.`);
 }
 
-fs.writeFileSync('deduction_test_results.txt', output);
+fs.writeFileSync(new URL('./deduction_test_results.txt', import.meta.url), output);

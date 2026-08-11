@@ -50,4 +50,4 @@ if (resTest810.incomeTax < 244) {
     log('❌ TEST "REVENIRE" EȘUAT.');
 }
 
-fs.writeFileSync('deduction_final_test.txt', output);
+fs.writeFileSync(new URL('./deduction_final_test.txt', import.meta.url), output);
