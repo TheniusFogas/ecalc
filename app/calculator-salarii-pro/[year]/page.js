@@ -125,6 +125,11 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
   const [vacationVouchers, setVacationVouchers] = useState('0');
   const [isPartTime, setIsPartTime] = useState(false);
   const [isPartTimeStudentOrPensioner, setIsPartTimeStudentOrPensioner] = useState(false);
+  // FEATURE (audit 2026-08-12): a gross below the legal minimum wage isn't a valid full-time
+  // salary — it only exists for part-time contracts. Before this, the calculator would silently
+  // compute a normal-looking result for e.g. 2000 RON brut as if it were an ordinary full-time
+  // job. Now that path is blocked (see calculate()) unless "Part-time" is explicitly checked.
+  const [blockedBelowMinimum, setBlockedBelowMinimum] = useState(null);
   const [currency, setCurrency] = useState('RON');
   const [exchangeRate, setExchangeRate] = useState(4.98);
 
@@ -549,6 +554,26 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
       }
     );
 
+    // FEATURE (audit 2026-08-12): a gross under the legal minimum wage isn't a valid full-time
+    // salary in România — it only exists for part-time contracts. Block the normal result and
+    // show a warning instead, unless the visitor has explicitly checked "Part-time" (isPartTime
+    // is already passed into the engine above, which applies the correct part-time overtaxation
+    // rules — this is purely about not presenting a below-minimum full-time result as if it
+    // were an ordinary calculation).
+    const sectorMinWageKey = sector === 'construction' ? 'minimum_gross_construction'
+      : sector === 'agriculture' ? 'minimum_gross_agriculture'
+      : sector === 'it' ? 'minimum_gross_it'
+      : 'minimum_salary';
+    const sectorMinWage = fiscalRules?.salary?.[sectorMinWageKey] || fiscalRules?.salary?.minimum_salary || 0;
+    const belowMinimum = !isPartTime && sectorMinWage > 0 && calcResult?.gross > 0 && calcResult.gross < sectorMinWage;
+
+    if (belowMinimum) {
+      setBlockedBelowMinimum({ gross: Math.round(calcResult.gross), minWage: sectorMinWage });
+      setResult(null);
+      return;
+    }
+    setBlockedBelowMinimum(null);
+
     setResult(calcResult);
 
     // Actualizare URL pentru SEO
@@ -884,6 +909,33 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                       ? `Calcul Salariu ${calculationType === 'brut-net' ? 'Net' : 'Brut'} ${inputValue} ${currency} - ${selectedYear || year}`
                       : `Calculator Salarii Profesional ${selectedYear || year}`}
                   </h1>
+
+                  {/*
+                    FEATURE (audit 2026-08-12): blocks the normal result for a full-time gross
+                    below the legal minimum wage instead of silently computing one — see the
+                    belowMinimum check in calculate(). Only a real part-time contract can
+                    legally pay less than the minimum wage.
+                  */}
+                  {blockedBelowMinimum && (
+                    <div className="mt-3 rounded-lg border-2 border-amber-400 bg-amber-50 p-4">
+                      <p className="text-sm font-semibold text-amber-900">
+                        ⚠️ {blockedBelowMinimum.gross} {currency} e sub salariul minim legal pe economie ({blockedBelowMinimum.minWage} RON).
+                      </p>
+                      <p className="text-xs text-amber-800 mt-1">
+                        Un salariu full-time nu poate fi legal sub acest prag. Dacă e vorba de un contract <strong>part-time</strong>,
+                        bifează opțiunea „Part-time" din formular ca să vezi calculul corect (inclusiv suprataxarea CAS/CASS aplicabilă).
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="mt-2 border-amber-400 text-amber-900 hover:bg-amber-100"
+                        onClick={() => setIsPartTime(true)}
+                      >
+                        Marchează ca part-time
+                      </Button>
+                    </div>
+                  )}
 
                   {/* SEO Semantic Content (Visually Hidden) */}
                   <div className="sr-only" aria-hidden="true">

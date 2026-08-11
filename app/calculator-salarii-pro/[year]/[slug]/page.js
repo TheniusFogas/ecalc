@@ -122,6 +122,18 @@ async function ServerComputedSummary({ year, amount, type, sector }) {
 
     const ron = (n) => `${Math.round(n).toLocaleString('ro-RO')} RON`;
 
+    // FIX (audit 2026-08-12): same gap as the interactive calculator — a gross below the legal
+    // minimum wage isn't a valid full-time salary. Several curated SEO amounts (POPULAR_SALARY_
+    // AMOUNTS) are intentionally below the current minimum for informational purposes, so this
+    // doesn't hide the numbers (removing them would mean fewer indexable pages, which the
+    // product direction here is deliberately NOT doing) — it labels them honestly instead.
+    const sectorMinWageKey = sector === 'construction' ? 'minimum_gross_construction'
+        : sector === 'agriculture' ? 'minimum_gross_agriculture'
+        : sector === 'it' ? 'minimum_gross_it'
+        : 'minimum_salary';
+    const sectorMinWage = rulesDoc?.salary?.[sectorMinWageKey] || rulesDoc?.salary?.minimum_salary || 0;
+    const isBelowMinimum = sectorMinWage > 0 && result.gross > 0 && result.gross < sectorMinWage;
+
     // FAQPage structured data — real numbers, real questions people actually search for.
     // This is what AI answer engines and Google's rich results extract directly, without
     // needing to run any JavaScript.
@@ -163,6 +175,12 @@ async function ServerComputedSummary({ year, amount, type, sector }) {
                 ({ron(result.cas)}), a contribuției CASS ({ron(result.cass)}) și a impozitului pe venit ({ron(result.incomeTax)}).
                 Costul total pentru angajator, incluzând CAM ({ron(result.cam)}), este de <strong>{ron(result.totalCost)}</strong>.
             </p>
+            {isBelowMinimum && (
+                <p className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg px-4 py-3 mb-5">
+                    ⚠️ {ron(result.gross)} este sub salariul minim legal pe economie ({ron(sectorMinWage)}). Calculul de mai sus
+                    e valabil pentru un contract <strong>part-time</strong> — un salariu full-time nu poate fi legal sub acest prag.
+                </p>
+            )}
             <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {[
                     ['Salariu Brut', result.gross],
