@@ -55,5 +55,5 @@ if (resOvertaxActive.is_overtaxed === true && resOvertaxInactive.is_overtaxed ==
     log('❌ TEST FAILED: Overtaxing toggle not working.');
 }
 
-fs.writeFileSync('test_results_clean.txt', output);
+fs.writeFileSync(new URL('./test_results_clean.txt', import.meta.url), output);
 log('\nResults saved to test_results_clean.txt');

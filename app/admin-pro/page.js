@@ -517,7 +517,7 @@ export default function AdminDashboard() {
                               value={fiscalRules.salary.minimum_salary || 4050}
                               onChange={(e) => updateFiscalField('salary', 'minimum_salary', parseFloat(e.target.value))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim pe economie (4050 RON în 2026)</p>
+                            <p className="text-xs text-slate-500 mt-1">Salariu minim pe economie (4.325 RON din 1 iulie 2026, conform OUG 89/2025 — a fost 4.050 RON ian.-iun.)</p>
                           </div>
                           <div>
                             <Label>Valoare Max Tichet Masă (RON)</Label>

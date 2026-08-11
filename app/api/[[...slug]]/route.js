@@ -27,25 +27,37 @@ async function connectToDatabase() {
     return { client, db };
 }
 
-// FIX (audit 2026-08-11): OUG 156/2024 eliminated the income-tax exemption and the reduced
-// CAS rate for the IT / construction / agriculture sectors, effective with income from January
-// 2025 — those sectors now pay the same CAS/CASS/income tax as a standard employee. The 2026
-// seed below still had the OLD (pre-2025) facilities hardcoded as active, and several keys the
-// engine reads (lib/salary-engine.js) were missing entirely, silently resolving to 0. Values
-// below reflect current law as best understood at the time of this fix — verify against the
-// Codul Fiscal / an accountant before treating this as a substitute for professional advice,
-// same disclaimer the site already shows its users.
+// FIX (audit 2026-08-11, updated 2026-08-12): OUG 156/2024 eliminated the income-tax exemption
+// and the reduced CAS rate for the IT / construction / agriculture sectors, effective with
+// income from January 2025 — those sectors now pay the same CAS/CASS/income tax as a standard
+// employee. The 2026 seed below still had the OLD (pre-2025) facilities hardcoded as active,
+// and several keys the engine reads (lib/salary-engine.js) were missing entirely, silently
+// resolving to 0.
+//
+// UPDATE 2026-08-12: the minimum wage itself changed MID-YEAR — OUG 89/2025 raised it from
+// 4.050 to 4.325 RON and reduced the untaxed-amount facility from 300 to 200 RON, effective
+// 1 July 2026 (confirmed against multiple independent current sources: StartupCafe, Keez,
+// Termene, Salariile.ro, SalariuCalculator.ro — all agree on 4.325 RON gross / 200 RON
+// exemption / 2.699 RON net at the minimum, which this engine reproduces almost exactly with
+// personal_deduction_base scaled to 20% of the new minimum, 865 RON). Values below are the
+// CURRENT (post-1-July-2026) figures. This system only stores one rule set per year — it does
+// not yet model "this is the value from July onward" as distinct from January–June — so this
+// intentionally prioritizes correctness for calculations happening NOW over retroactive
+// accuracy for January–June 2026 dates. A real multi-period model (fiscal_rules keyed by
+// effectiveDate ranges within a year, already hinted at by the `effectiveDate` field and the
+// `?history=1` query param this API supports) is the proper fix — bigger change, left for a
+// dedicated pass rather than rushed into this one.
 const SALARY_FIELD_DEFAULTS_2026 = {
-    minimum_salary: 4050,
+    minimum_salary: 4325,
     average_salary: 7500,
     cas_rate: 25,
     cass_rate: 10,
     income_tax_rate: 10,
     cam_rate: 2.25,
     untaxed_amount_enabled: true,
-    untaxed_amount: 300,
+    untaxed_amount: 200,
     meal_voucher_max: 40,
-    personal_deduction_base: 810,
+    personal_deduction_base: 865, // 20% din noul minim (4325) — vezi nota de mai sus
     personal_deduction_range: 2000,
     personal_deduction_percent: 20,
     child_deduction: 100, // 100 RON/copil, fix — nu procentual (vezi nota din admin UI)
@@ -63,13 +75,47 @@ const SALARY_FIELD_DEFAULTS_2026 = {
     agriculture_tax_exempt: false,
     tax_exemption_threshold: 0,
     // Fără facilitate de sector activă, minimul pe sector e minimul național.
-    minimum_gross_construction: 4050,
-    minimum_gross_agriculture: 4050,
-    minimum_gross_it: 4050,
+    minimum_gross_construction: 4325,
+    minimum_gross_agriculture: 4325,
+    minimum_gross_it: 4325,
     youth_exemption_threshold: 0,
     youth_deduction_rate: 0,
     part_time_overtax_enabled: false,
 };
+
+// FIX (audit 2026-08-12): the generic backfill below only fills fields that are MISSING —
+// correct, because it must never silently overwrite a value an admin deliberately chose. But
+// minimum_salary/untaxed_amount/personal_deduction_base/minimum_gross_* are NOT missing on an
+// existing 2026 document — they were set on day one to the January–June figures and, absent
+// this, would just sit there stale post-1-July with no mechanism to ever catch up. This
+// migration corrects ONLY documents that still hold the exact old January–June default —
+// i.e. nobody has touched these fields since deployment — leaving any value an admin has
+// actually edited untouched, even a stale one, since that's now a deliberate override rather
+// than an artifact of a mid-year law change nobody could have configured for in advance.
+const STALE_JAN_JUN_2026_VALUES = {
+    minimum_salary: 4050,
+    untaxed_amount: 300,
+    personal_deduction_base: 810,
+    minimum_gross_construction: 4050,
+    minimum_gross_agriculture: 4050,
+    minimum_gross_it: 4050,
+};
+
+async function correctStaleMidYearDefaults(db) {
+    const fiscalRules = db.collection('fiscal_rules');
+    const doc = await fiscalRules.findOne({ year: 2026 });
+    if (!doc || !doc.salary) return;
+    const patch = {};
+    for (const [key, staleValue] of Object.entries(STALE_JAN_JUN_2026_VALUES)) {
+        if (doc.salary[key] === staleValue) {
+            patch[`salary.${key}`] = SALARY_FIELD_DEFAULTS_2026[key];
+        }
+    }
+    if (Object.keys(patch).length > 0) {
+        await fiscalRules.updateOne({ _id: doc._id }, { $set: patch });
+        console.warn('[fiscal-rules] Actualizat automat valorile salariului minim la cifrele din iulie 2026 (OUG 89/2025):', patch);
+    }
+}
 
 const PFA_FIELD_DEFAULTS_2026 = {
     minimum_salary: 4050,
@@ -101,6 +147,7 @@ async function initializeFiscalRules(db) {
         });
     }
     await backfillMissingFiscalFields(db);
+    await correctStaleMidYearDefaults(db);
 }
 
 // FIX (audit 2026-08-11): the old seed only ever ran ONCE per year ("if not exists") — any
