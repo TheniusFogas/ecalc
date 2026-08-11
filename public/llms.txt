@@ -1,0 +1,35 @@
+# eCalc.ro
+
+> Calculator fiscal profesional pentru România: salarii (brut/net/cost), PFA vs SRL,
+> impozit auto, e-Factura, rentabilitate imobiliară, compensații zboruri întârziate,
+> concediu medical, zile lucrătoare și zile libere. Toate calculele folosesc regulile
+> fiscale oficiale în vigoare (CAS, CASS, impozit pe venit, CAM) și sunt actualizate
+> anual conform legislației românești.
+
+## Calculatoare
+
+- [Calculator Salarii — Brut/Net/Cost](https://ecalc.ro/calculator-salarii-pro/2026): calcul complet CAS (25%), CASS (10%), impozit pe venit (10%), deducere personală, tichete de masă și vacanță, sectoare Standard/IT/Construcții/Agricultură.
+- [Calculator PFA vs SRL](https://ecalc.ro/calculator-pfa/2026): venit net PFA (sistem real și normă de venit), comparație cu SRL.
+- [Decision Maker — Salariu vs PFA vs SRL](https://ecalc.ro/decision-maker/2026): analiză break-even, care variantă e mai avantajoasă la un anumit venit.
+- [Calculator Impozit Auto](https://ecalc.ro/calculator-impozit-auto/2026): impozit anual auto pe categorie de cilindree, localitate, vehicule hibride/electrice.
+- [Calculator e-Factura](https://ecalc.ro/calculator-efactura/2026): termene de transmitere RO e-Factura și amenzi ANAF.
+- [Calculator Rentabilitate Imobiliară](https://ecalc.ro/calculator-imobiliare-pro/2026): randament, credit ipotecar, cash-on-cash.
+- [Calculator Compensații Zboruri](https://ecalc.ro/calculator-compensatii-zboruri/2026): compensații conform Regulamentului UE 261/2004.
+- [Calculator Concediu Medical](https://ecalc.ro/calculator-concediu-medical/2026): indemnizație conform OUG 158/2005.
+- [Zile Lucrătoare](https://ecalc.ro/zile-lucratoare/2026) și [Zile Libere](https://ecalc.ro/zile-libere/2026) pe anul curent.
+
+## Formula de bază — Salariu Brut → Net (regim standard 2026)
+
+Net = Brut − CAS − CASS − Impozit pe venit, unde:
+- CAS (contribuție pensie) = 25% din baza de calcul
+- CASS (contribuție sănătate) = 10% din baza de calcul
+- Impozit pe venit = 10% din (Brut − CAS − CASS − Deducere personală)
+- CAM (contribuție angajator) = 2.25% din Brut, plătită separat de angajator
+
+Valorile exacte (salariu minim, praguri, deduceri) sunt actualizate anual și disponibile
+în timp real pe fiecare pagină de calculator.
+
+## Notă pentru agenți/crawlere
+
+Fiecare pagină de calculator randează server-side un rezumat text cu cifrele calculate
+(nu doar formularul interactiv), pentru a putea fi citit fără executare de JavaScript.

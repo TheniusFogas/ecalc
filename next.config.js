@@ -10,6 +10,21 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // FIX (audit 2026-08-11): these five legacy routes were simplified early duplicates of the
+  // "-pro" calculators, still live and crawlable, all silently canonicalizing to the homepage
+  // (see root layout fix). A 301 keeps whatever link equity they've accumulated and points it
+  // at the real page instead of leaving two indexable, duplicate-content versions of the same
+  // calculator competing with each other.
+  async redirects() {
+    const currentYear = new Date().getFullYear();
+    return [
+      { source: '/salarii', destination: `/calculator-salarii-pro/${currentYear}`, permanent: true },
+      { source: '/e-factura', destination: `/calculator-efactura/${currentYear}`, permanent: true },
+      { source: '/imobiliare', destination: `/calculator-imobiliare-pro/${currentYear}`, permanent: true },
+      { source: '/impozit-auto', destination: `/calculator-impozit-auto/${currentYear}`, permanent: true },
+      { source: '/concediu-medical', destination: `/calculator-concediu-medical/${currentYear}`, permanent: true },
+    ];
+  },
   experimental: {
     serverComponentsExternalPackages: ['mongodb'],
   },
@@ -34,7 +49,10 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.open-meteo.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://ipapi.co https://*.open-meteo.com; frame-ancestors 'none';",
+            // FIX (audit 2026-08-11): added https://ecalc.artgrup.workers.dev to connect-src —
+            // it backs the ChatFloat assistant widget (components/ChatFloat.js), which the CSP
+            // would otherwise silently block from the browser the moment it's mounted.
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.open-meteo.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://ipapi.co https://*.open-meteo.com https://ecalc.artgrup.workers.dev; frame-ancestors 'none';",
           },
           {
             key: 'Strict-Transport-Security',

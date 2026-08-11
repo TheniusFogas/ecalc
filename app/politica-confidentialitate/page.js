@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
               <ul>
                 <li><strong>Date tehnice:</strong> Adresa IP, tip browser, sistem de operare</li>
                 <li><strong>Cookie-uri:</strong> Pentru funcționarea site-ului și salvarea preferințelor</li>
-                <li><strong>Analytics:</strong> Pagini vizitate, timp petrecut pe site (prin Google Analytics - anonim)</li>
+                <li><strong>Analytics:</strong> Nu folosim în prezent niciun instrument de analytics (ex. Google Analytics) — dacă adăugăm unul pe viitor, această secțiune va fi actualizată</li>
               </ul>
 
               <h2>3. Scopul Prelucrării Datelor</h2>
@@ -60,7 +60,7 @@ export default function PrivacyPolicyPage() {
               <ul>
                 <li>Furnizarea calculatoarelor fiscale (procesare locală în browser)</li>
                 <li>Răspuns la solicitările de consultanță (lead-uri)</li>
-                <li>Îmbunătățirea serviciilor noastre (analytics anonim)</li>
+                <li>Îmbunătățirea serviciilor noastre</li>
                 <li>Respectarea obligațiilor legale</li>
               </ul>
 
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
               <p><strong>NU vindem datele dumneavoastră terților.</strong></p>
               <p>Partajăm date doar cu:</p>
               <ul>
-                <li><strong>Furnizori de servicii:</strong> MongoDB Atlas (hosting bază de date - UE), Google Analytics (analytics)</li>
+                <li><strong>Furnizori de servicii:</strong> MongoDB Atlas (hosting bază de date - UE)</li>
                 <li><strong>Autorități:</strong> Când este cerut legal</li>
               </ul>
 
@@ -105,7 +105,6 @@ export default function PrivacyPolicyPage() {
               <ul>
                 <li><strong>Esențiale:</strong> Necesare pentru funcționarea site-ului (autentificare admin)</li>
                 <li><strong>Funcționale:</strong> Salvare preferințe calculator (an selectat, monedă)</li>
-                <li><strong>Analytics:</strong> Google Analytics (anonimizat)</li>
               </ul>
               <p>Puteți refuza cookie-urile din setările browser-ului, dar acest lucru poate afecta funcționarea site-ului.</p>
 

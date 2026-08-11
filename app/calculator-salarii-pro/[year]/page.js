@@ -16,11 +16,13 @@ import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { mapDbToFiscalRules } from '@/lib/data-mapper';
 import { calculateSalaryResults, SalaryCalculator, getBNRExchangeRate, getSectorMinimums } from '@/lib/salary-engine';
+import { nearestPopularAmounts } from '@/lib/salary-seo-amounts';
 import { MedicalLeaveCalculator, SICK_CODES } from '@/lib/medical-leave-calculator';
 import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
 import { saveToStorage, loadFromStorage, clearStorage } from '@/components/CalculatorLayout';
 import { generateSalaryPDF, generateGenericPDF, generateWorkingDaysPDF } from '@/lib/pdf-export';
+import { generateSalaryExcel } from '@/lib/excel-export';
 import { defaultHolidays, calculateWorkingDays, calculateYearlyWorkingDays } from '@/lib/holidays-data';
 import { holidayDescriptions } from '@/lib/holiday-descriptions';
 import { getHistoricalWeather } from '@/lib/weather-data';
@@ -729,6 +731,22 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
     }
   };
 
+  // FIX (audit 2026-08-11): `xlsx` was installed, never used — quick win for HR/contabili
+  // care vor cifrele reutilizabile într-un tabel, nu doar un PDF de citit.
+  const downloadExcel = async () => {
+    if (activeTab !== 'calculator' || !result) {
+      toast.error('Calculați mai întâi salariul pentru a descărca Excel');
+      return;
+    }
+    try {
+      const filename = await generateSalaryExcel(result, selectedYear || year, exchangeRate);
+      if (filename) toast.success(`Excel descărcat: ${filename}`);
+    } catch (error) {
+      toast.error('Eroare la generarea Excel-ului');
+      console.error(error);
+    }
+  };
+
   // ============================================
   // EXPORT - PRINT PDF (DOAR REZULTATUL - A4/A5)
   // ============================================
@@ -980,21 +998,36 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                       >
                         <Download className="h-4 w-4" />
                       </Button>
+                      {activeTab === 'calculator' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={downloadExcel}
+                          className="w-9 h-9 p-0 border-slate-200 shadow-sm hover:text-green-600 bg-white"
+                          title="Descarcă Excel"
+                        >
+                          <Table className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* SEO Variation Links - DOAR pentru Calculator (când există input) */}
+                {/*
+                  FIX (audit 2026-08-11, direcție de produs confirmată): înainte, aceste linkuri
+                  se construiau din inputValue + diferență brută (val-100, val+50...) — orice
+                  sumă tastată de un vizitator genera pe loc o pagină nouă indexabilă, spațiu
+                  nelimitat de URL-uri. Acum trag din POPULAR_SALARY_AMOUNTS (aceeași listă
+                  curatoriată folosită de sitemap.ts) — rămân "sume relevante lângă a ta", dar
+                  legate DOAR către pagini care chiar există, sunt pre-randate și au conținut
+                  distinct (vezi [slug]/page.js).
+                */}
                 {activeTab === 'calculator' && inputValue && result && (
                   <div className="flex flex-col sm:flex-row items-center gap-2">
                     <span className="text-xs text-indigo-900/60 font-semibold tracking-wide hidden sm:inline uppercase text-[10px]">Vezi și salariul de:</span>
-                    <div className="flex gap-2">
-                      {[-100, -50, 50, 100].map((diff) => {
-                        const val = parseInt(inputValue);
-                        if (isNaN(val)) return null;
-                        const newVal = val + diff;
-                        if (newVal <= 0) return null;
-
+                    <div className="flex gap-2 flex-wrap">
+                      {nearestPopularAmounts(parseInt(inputValue), 4).map((newVal) => {
                         const typeSlug = calculationType === 'net-brut' ? 'net' : 'brut';
 
                         // Map internal sector to SEO slug (ROBUST MAPPING)
@@ -1005,17 +1038,16 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                         else if (s === 'construction' || s.includes('construct')) sectorSlug = 'constructii';
                         else if (s === 'agriculture' || s.includes('agri')) sectorSlug = 'agricultura';
 
-                        // Slug format: /year/[val]-ron-[sector]-[tip]-calcul-salariu-net
-                        const href = `/calculator-salarii-pro/${selectedYear || year}/${newVal}-ron${sectorSlug === 'standard' ? '' : '-' + sectorSlug}-${typeSlug}-calcul-salariu-net`;
+                        const href = `/calculator-salarii-pro/${selectedYear || year}/${newVal}-${typeSlug}-lei`;
 
                         return (
                           <Link
-                            key={diff}
+                            key={newVal}
                             href={href}
                             title={`Calculează salariul ${sectorSlug} pentru ${newVal} ${currency}`}
                             className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 hover:border-indigo-200 transition-all shadow-sm"
                           >
-                            {diff > 0 ? '+' : ''} {newVal} {currency}
+                            {newVal} {currency}
                           </Link>
                         );
                       })}
@@ -1355,6 +1387,9 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                             </Button>
                             <Button variant="outline" size="sm" onClick={downloadPDF} disabled={!result} className="w-9 h-9 p-0 border-slate-200" title="Descarcă PDF">
                               <Download className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={downloadExcel} disabled={!result} className="w-9 h-9 p-0 border-slate-200" title="Descarcă Excel">
+                              <Table className="h-4 w-4" />
                             </Button>
                           </div>
                         </CardHeader>
@@ -2154,10 +2189,21 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                                               <span className="text-sm text-slate-900">{holiday.name}</span>
                                             </td>
                                             <td className="py-1 px-4">
+                                              {/*
+                                                FIX (audit 2026-08-11): for the current year,
+                                                lib/weather-data.js returns a static per-month
+                                                climate average with no network call at all — but
+                                                this showed a spinner + "Se caută istoric..."
+                                                as if it were live-searching an archive, which is
+                                                only true for other years (real API fetch there).
+                                                Relabeled to be accurate either way, and the value
+                                                itself is now captioned as a climate average, not
+                                                implied to be an exact daily record.
+                                              */}
                                               {weatherLoadingProgress[holiday.date] ? (
                                                 <div className="flex items-center gap-2">
                                                   <div className="animate-spin h-3 w-3 border-b-2 border-blue-500 rounded-full"></div>
-                                                  <span className="text-[10px] text-slate-400 italic">Se caută istoric...</span>
+                                                  <span className="text-[10px] text-slate-400 italic">Se încarcă...</span>
                                                 </div>
                                               ) : (
                                                 <div className="flex items-center gap-2">
@@ -2172,8 +2218,8 @@ export function SalaryCalculatorContent({ initialTab, initialValue, initialSecto
                                                     <div className="font-medium">
                                                       {weatherCache[holiday.date]?.temp || weatherData[date.getMonth()].temp}
                                                     </div>
-                                                    <div className="text-slate-500 text-[10px]">
-                                                      {weatherCache[holiday.date]?.condition || weatherData[date.getMonth()].condition}
+                                                    <div className="text-slate-500 text-[10px]" title="Medie climatică multianuală pentru această lună, nu o prognoză exactă pentru zi">
+                                                      {weatherCache[holiday.date]?.condition || weatherData[date.getMonth()].condition} (medie lunară)
                                                     </div>
                                                   </div>
                                                 </div>

@@ -1,8 +1,8 @@
 
 import { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { validateSession, SESSION_COOKIE_NAME } from '@/lib/admin-auth';
 
 const uri = process.env.MONGO_URL;
 const dbName = process.env.DB_NAME || 'ecalc_ro';
@@ -27,6 +27,65 @@ async function connectToDatabase() {
     return { client, db };
 }
 
+// FIX (audit 2026-08-11): OUG 156/2024 eliminated the income-tax exemption and the reduced
+// CAS rate for the IT / construction / agriculture sectors, effective with income from January
+// 2025 — those sectors now pay the same CAS/CASS/income tax as a standard employee. The 2026
+// seed below still had the OLD (pre-2025) facilities hardcoded as active, and several keys the
+// engine reads (lib/salary-engine.js) were missing entirely, silently resolving to 0. Values
+// below reflect current law as best understood at the time of this fix — verify against the
+// Codul Fiscal / an accountant before treating this as a substitute for professional advice,
+// same disclaimer the site already shows its users.
+const SALARY_FIELD_DEFAULTS_2026 = {
+    minimum_salary: 4050,
+    average_salary: 7500,
+    cas_rate: 25,
+    cass_rate: 10,
+    income_tax_rate: 10,
+    cam_rate: 2.25,
+    untaxed_amount_enabled: true,
+    untaxed_amount: 300,
+    meal_voucher_max: 40,
+    personal_deduction_base: 810,
+    personal_deduction_range: 2000,
+    personal_deduction_percent: 20,
+    child_deduction: 100, // 100 RON/copil, fix — nu procentual (vezi nota din admin UI)
+    dependent_deduction: 100,
+    // IT / Construcții / Agricultură: facilitățile fiscale au fost eliminate din ian. 2025
+    // (OUG 156/2024) — sectoarele plătesc acum aceleași CAS/CASS/impozit ca regimul standard.
+    it_tax_exempt: false,
+    it_threshold: 10000,
+    it_pilon2_optional: false,
+    pilon2_rate: 0,
+    construction_cas_rate: 25,
+    construction_tax_exempt: false,
+    construction_cass_exempt: false,
+    agriculture_cas_rate: 25,
+    agriculture_tax_exempt: false,
+    tax_exemption_threshold: 0,
+    // Fără facilitate de sector activă, minimul pe sector e minimul național.
+    minimum_gross_construction: 4050,
+    minimum_gross_agriculture: 4050,
+    minimum_gross_it: 4050,
+    youth_exemption_threshold: 0,
+    youth_deduction_rate: 0,
+    part_time_overtax_enabled: false,
+};
+
+const PFA_FIELD_DEFAULTS_2026 = {
+    minimum_salary: 4050,
+    cas_rate: 25,
+    cass_rate: 10,
+    income_tax_rate: 10,
+    cass_min_threshold: 6,
+    cass_max_threshold: 60,
+    cas_min_optional: 12,
+    cas_obligatory_12: 12,
+    cas_obligatory_24: 24,
+    norm_limit_eur: 25000,
+    vat_threshold_eur: 88500,
+    dividend_tax_rate: 10, // 10% din ianuarie 2025 (fost 8%)
+};
+
 // Initialize fiscal rules for multi-year architecture
 async function initializeFiscalRules(db) {
     const fiscalRules = db.collection('fiscal_rules');
@@ -35,40 +94,38 @@ async function initializeFiscalRules(db) {
         await fiscalRules.insertOne({
             year: 2026,
             effectiveDate: '2026-01-01',
-            salary: {
-                minimum_salary: 4050,
-                average_salary: 7500,
-                cas_rate: 25,
-                cass_rate: 10,
-                income_tax_rate: 10,
-                cam_rate: 2.25,
-                untaxed_amount_enabled: true,
-                untaxed_amount: 300,
-                meal_voucher_max: 40,
-                tax_exemption_threshold: 10000,
-                personal_deduction_base: 810,
-                personal_deduction_range: 2000,
-                child_deduction: 300,
-                it_tax_exempt: true,
-                it_threshold: 10000,
-                construction_cas_rate: 21.25,
-                construction_tax_exempt: true,
-            },
-            pfa: {
-                minimum_salary: 4050,
-                cas_rate: 25,
-                cass_rate: 10,
-                income_tax_rate: 10,
-                cass_min_threshold: 6,
-                cass_max_threshold: 60,
-                cas_min_optional: 12,
-                cas_obligatory_12: 12,
-                cas_obligatory_24: 24,
-                norm_limit_eur: 25000,
-            },
+            salary: { ...SALARY_FIELD_DEFAULTS_2026 },
+            pfa: { ...PFA_FIELD_DEFAULTS_2026 },
             createdAt: new Date(),
             updatedAt: new Date(),
         });
+    }
+    await backfillMissingFiscalFields(db);
+}
+
+// FIX (audit 2026-08-11): the old seed only ever ran ONCE per year ("if not exists") — any
+// field added to the engine's logic after a year's document already existed in production
+// never made it into that document, and getRule() silently returned 0/false for it. This
+// backfill runs on every request (cheap — the fiscal_rules collection has one document per
+// year) and fills in ONLY fields that are genuinely absent. It never overwrites a value an
+// admin already configured, even one that looks wrong — that's a deliberate choice, not an
+// oversight.
+async function backfillMissingFiscalFields(db) {
+    const fiscalRules = db.collection('fiscal_rules');
+    const docs = await fiscalRules.find({}).toArray();
+    for (const doc of docs) {
+        const patch = {};
+        const salary = doc.salary || {};
+        for (const [key, value] of Object.entries(SALARY_FIELD_DEFAULTS_2026)) {
+            if (salary[key] === undefined) patch[`salary.${key}`] = value;
+        }
+        const pfa = doc.pfa || {};
+        for (const [key, value] of Object.entries(PFA_FIELD_DEFAULTS_2026)) {
+            if (pfa[key] === undefined) patch[`pfa.${key}`] = value;
+        }
+        if (Object.keys(patch).length > 0) {
+            await fiscalRules.updateOne({ _id: doc._id }, { $set: patch });
+        }
     }
 }
 
@@ -164,32 +221,16 @@ async function handleLeadsExport(db) {
     });
 }
 
-// POST /api/auth/login
-async function handleLogin(body, db) {
-    try {
-        const { email, password } = (body || {});
-        const admin = await db.collection('adminUsers').findOne({ email });
+// Auth for /api/auth/login, /api/auth/session, /api/auth/logout now lives exclusively in
+// app/api/auth/login|session|logout/route.js + lib/admin-auth.js (single source of truth —
+// this file used to have its own duplicate login handler with a hardcoded password bypass
+// ("Admin2026!" always worked). Removed as part of the 2026-08-11 security fix.
 
-        if (!admin) {
-            return NextResponse.json({ error: 'Credențiale invalide' }, { status: 401 });
-        }
-
-        const isValid = await bcrypt.compare(password, admin.password);
-        if (!isValid) {
-            // Bypass for special dev password if needed, but normally use bcrypt
-            if (password !== 'Admin2026!') {
-                return NextResponse.json({ error: 'Credențiale invalide' }, { status: 401 });
-            }
-        }
-
-        return NextResponse.json({
-            success: true,
-            token: 'session-' + uuidv4(),
-            email: email
-        });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+// Guards every admin-only endpoint below (PUT fiscal-rules/settings/holidays, GET leads).
+// Returns the session if valid, or null — callers must check and return 401 themselves.
+async function requireSession(request, db) {
+    const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+    return validateSession(db, token);
 }
 
 // GET /api/holidays/:year
@@ -283,10 +324,13 @@ export async function GET(request, { params }) {
             return handleHolidaysGet(db, year);
         } else if (slug === 'settings') {
             return handleSettingsGet(db);
-        } else if (slug === 'leads') {
-            return handleLeadsGet(db);
-        } else if (slug === 'leads/export') {
-            return handleLeadsExport(db);
+        } else if (slug === 'leads' || slug === 'leads/export') {
+            // Leads contain visitor PII (name, email, phone) — admin session required.
+            const session = await requireSession(request, db);
+            if (!session) {
+                return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
+            }
+            return slug === 'leads' ? handleLeadsGet(db) : handleLeadsExport(db);
         }
 
         return NextResponse.json({
@@ -311,10 +355,10 @@ export async function POST(request, { params }) {
         const { db } = await connectToDatabase();
 
         if (slug === 'leads') {
+            // Public on purpose — this is the visitor-facing lead capture form.
             return handleLeadPost(body, db);
-        } else if (slug === 'auth/login') {
-            return handleLogin(body, db);
         }
+        // Auth (/api/auth/login, /session, /logout) is handled by its own literal routes now.
 
         return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     } catch (error) {
@@ -327,6 +371,16 @@ export async function PUT(request, { params }) {
     try {
         const { db } = await connectToDatabase();
         const slug = params?.slug?.join('/') || '';
+
+        // Every PUT below mutates fiscal rules, holidays or settings for ALL visitors —
+        // admin session required for all of them.
+        const isAdminWrite = slug.startsWith('fiscal-rules/') || slug.startsWith('holidays/') || slug === 'settings';
+        if (isAdminWrite) {
+            const session = await requireSession(request, db);
+            if (!session) {
+                return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
+            }
+        }
 
         if (slug.startsWith('fiscal-rules/')) {
             const year = slug.split('/')[1];
