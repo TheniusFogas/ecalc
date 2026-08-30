@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { CITIES_ROMANIA } from '@/lib/cities-data';
 import { ROMANIA_COUNTIES } from '@/lib/counties-data';
 import NavigationHeader from '@/components/NavigationHeader';
@@ -29,7 +30,8 @@ export default async function CountyPage({ params }) {
     const { slug } = params;
     const countyInfo = ROMANIA_COUNTIES.find(c => c.slug === slug);
 
-    if (!countyInfo) return <div>Judetul nu a fost gasit.</div>;
+    // FIX (audit 2026-08-11): was a bare 200-status div, same soft-404 issue as vreme/[slug].
+    if (!countyInfo) notFound();
 
     // Fetch weather for the county seat (capital)
     const capitalName = countyInfo.capital || countyInfo.name;

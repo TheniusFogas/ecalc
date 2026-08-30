@@ -1,4 +1,5 @@
 import React from 'react';
+import { notFound } from 'next/navigation';
 import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';
 import WeatherView from './WeatherView';
@@ -11,9 +12,14 @@ const VARFURI_MUNTE = ROMANIAN_MOUNTAIN_PEAKS;
 
 // SEO: Generam titlu si descriere unica pentru fiecare oras/sat
 export async function generateMetadata({ params }) {
-  const city = params.slug.charAt(0).toUpperCase() + params.slug.slice(1).replace(/-/g, ' ');
+  // FIX (audit 2026-08-11): was `slug.charAt(0).toUpperCase() + slug.slice(1)` — capitalized
+  // only the very first letter of the whole slug, so multi-word names showed up in Google as
+  // "Cluj napoca", "Baia mare", "Targu mures" instead of properly capitalized. Also the year
+  // was hardcoded "2026" regardless of when the page is actually served.
+  const city = params.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+  const currentYear = new Date().getFullYear();
   return {
-    title: `Vremea in ${city} - Prognoza Meteo Detaliata 2026`,
+    title: `Vremea in ${city} - Prognoza Meteo Detaliata ${currentYear}`,
     description: `Afla starea vremii in ${city}. Temperatura reala, sanse de precipitatii si prognoza pe 14 zile. Date actualizate pentru ${city}.`,
     alternates: {
       canonical: `https://ecalc.ro/vreme/${params.slug}`,
@@ -79,15 +85,10 @@ async function getWeatherData(cityName) {
 export default async function Page({ params }) {
   const data = await getWeatherData(params.slug);
 
-  if (!data) return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
-      <NavigationHeader />
-      <main className="flex-grow flex items-center justify-center">
-        <h1 className="text-xl font-bold">Locatie negasita.</h1>
-      </main>
-      <Footer />
-    </div>
-  );
+  // FIX (audit 2026-08-11): was a normal 200 response with "Locatie negasita" as the entire
+  // page — a soft-404. Google was indexing these as real, thin, near-duplicate pages (~290
+  // possible slugs where geocoding can fail). notFound() renders a real 404 status instead.
+  if (!data) notFound();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">

@@ -11,7 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  // SECURITY FIX (audit 2026-08-11): this used to default to `true`, so the dashboard —
+  // fiscal rules editor, visitor leads, settings — rendered fully for ANY visitor, no
+  // login required. It now defaults to false and is only flipped on by a verified
+  // server-side session (see checkSession below), never assumed.
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedYear, setSelectedYear] = useState(2026);
@@ -29,6 +34,7 @@ export default function AdminDashboard() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin', // required so the browser stores the httpOnly session cookie
         body: JSON.stringify({ email, password }),
       });
 
@@ -43,6 +49,33 @@ export default function AdminDashboard() {
       toast.error('Eroare la autentificare');
     }
   };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } catch (error) {
+      // ignore — we clear local state regardless
+    } finally {
+      setIsAuthenticated(false);
+      setFiscalRules(null);
+    }
+  };
+
+  // Checks for a real, server-validated session on load — replaces the old default of
+  // "assume authenticated". Runs once on mount.
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        setIsAuthenticated(res.ok);
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   const loadData = async () => {
     try {
@@ -182,6 +215,14 @@ export default function AdminDashboard() {
     });
   };
 
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -263,7 +304,7 @@ export default function AdminDashboard() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
+              <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
             </div>
@@ -476,7 +517,7 @@ export default function AdminDashboard() {
                               value={fiscalRules.salary.minimum_salary || 4050}
                               onChange={(e) => updateFiscalField('salary', 'minimum_salary', parseFloat(e.target.value))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Salariu minim pe economie (4050 RON în 2026)</p>
+                            <p className="text-xs text-slate-500 mt-1">Salariu minim pe economie (4.325 RON din 1 iulie 2026, conform OUG 89/2025 — a fost 4.050 RON ian.-iun.)</p>
                           </div>
                           <div>
                             <Label>Valoare Max Tichet Masă (RON)</Label>
@@ -486,6 +527,71 @@ export default function AdminDashboard() {
                               onChange={(e) => updateFiscalField('salary', 'meal_voucher_max', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">Valoare maximă tichet de masă neimpozabil</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/*
+                        FIX (audit 2026-08-11): these five fields existed in an earlier version
+                        of this panel (app/admin-pro/page_backup_latest_simplified.js) and were
+                        lost in a later rewrite. Without them, the engine (lib/salary-engine.js)
+                        falls back to 0 for any sector whose minimum wage was never set — e.g.
+                        getSectorMinimums('construction') silently returns {brut:0, net:0}.
+                        No default legal values are pre-filled here on purpose — leave a field
+                        empty/0 until you've confirmed the correct current figure; the engine
+                        now logs a console warning for any calculation that runs with one of
+                        these still unset instead of failing silently.
+                      */}
+                      <div className="border-t pt-4">
+                        <h3 className="font-semibold mb-4">Minime pe Sector ⚠️ Reintroduse — verifică valorile</h3>
+                        <p className="text-xs text-amber-600 mb-4">Câmpuri lipsă anterior din acest panou. Necompletate, motorul de calcul le tratează ca 0 pentru sectorul respectiv — completează-le cu valoarea legală curentă înainte de a te baza pe calculul pentru acel sector.</p>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <Label>Salariu Minim Brut — Construcții (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_construction ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_construction', parseFloat(e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Salariu Minim Brut — Agricultură (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_agriculture ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_agriculture', parseFloat(e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Salariu Minim Brut — IT (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.minimum_gross_it ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('salary', 'minimum_gross_it', parseFloat(e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Deducere Personală ca % din Salariul Minim</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.personal_deduction_percent ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('salary', 'personal_deduction_percent', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Folosit doar dacă „Deducere Personală Maximă (RON)" de mai sus e goală</p>
+                          </div>
+                          <div>
+                            <Label>Prag General Scutiri (RON)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.salary.tax_exemption_threshold ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('salary', 'tax_exemption_threshold', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Același prag e folosit pentru IT, Construcții și Agricultură — până acum era needitabil aici (doar afișat)</p>
                           </div>
                         </div>
                       </div>
@@ -1005,6 +1111,17 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
+                      {/*
+                        FIX (audit 2026-08-11): these three fields wrote to
+                        cas_optional_threshold / cas_base_12 / cas_base_24 — but
+                        lib/pfa-calculator.js reads cas_min_optional / cas_obligatory_12 /
+                        cas_obligatory_24. Different key names meant every edit made here was
+                        silently ignored by the actual calculation. Renamed to match what the
+                        engine reads. Also fixed a separate bug in pfa-calculator.js itself:
+                        the threshold was computed as minSalary × 12 × cas_obligatory_12
+                        (≈583.200 RON) instead of minSalary × cas_obligatory_12 (≈48.600 RON,
+                        the correct "12 salarii minime" threshold) — see lib/pfa-calculator.js.
+                      */}
                       <div className="border-t pt-4">
                         <h3 className="font-semibold mb-4">Plafoane CAS (în salarii minime)</h3>
                         <div className="grid md:grid-cols-3 gap-4">
@@ -1012,8 +1129,8 @@ export default function AdminDashboard() {
                             <Label>Prag Opțional CAS</Label>
                             <Input
                               type="number"
-                              value={fiscalRules.pfa.cas_optional_threshold || 12}
-                              onChange={(e) => updateFiscalField('pfa', 'cas_optional_threshold', parseFloat(e.target.value))}
+                              value={fiscalRules.pfa.cas_min_optional || 12}
+                              onChange={(e) => updateFiscalField('pfa', 'cas_min_optional', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">Sub 12 salarii, CAS opțional</p>
                           </div>
@@ -1021,8 +1138,8 @@ export default function AdminDashboard() {
                             <Label>Bază CAS 12-24 salarii</Label>
                             <Input
                               type="number"
-                              value={fiscalRules.pfa.cas_base_12 || 12}
-                              onChange={(e) => updateFiscalField('pfa', 'cas_base_12', parseFloat(e.target.value))}
+                              value={fiscalRules.pfa.cas_obligatory_12 || 12}
+                              onChange={(e) => updateFiscalField('pfa', 'cas_obligatory_12', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">CAS la baza de 12 salarii</p>
                           </div>
@@ -1030,8 +1147,8 @@ export default function AdminDashboard() {
                             <Label>Bază CAS peste 24 salarii</Label>
                             <Input
                               type="number"
-                              value={fiscalRules.pfa.cas_base_24 || 24}
-                              onChange={(e) => updateFiscalField('pfa', 'cas_base_24', parseFloat(e.target.value))}
+                              value={fiscalRules.pfa.cas_obligatory_24 || 24}
+                              onChange={(e) => updateFiscalField('pfa', 'cas_obligatory_24', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">CAS la baza de 24 salarii</p>
                           </div>
@@ -1040,7 +1157,7 @@ export default function AdminDashboard() {
 
                       <div className="border-t pt-4">
                         <h3 className="font-semibold mb-4">Praguri și Limite</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="grid md:grid-cols-3 gap-4">
                           <div>
                             <Label>Limită TVA (EUR)</Label>
                             <Input
@@ -1058,6 +1175,16 @@ export default function AdminDashboard() {
                               onChange={(e) => updateFiscalField('pfa', 'norm_limit_eur', parseFloat(e.target.value))}
                             />
                             <p className="text-xs text-slate-500 mt-1">Venit maxim pentru normă (25.000 EUR)</p>
+                          </div>
+                          <div>
+                            <Label>Impozit Dividende (%)</Label>
+                            <Input
+                              type="number"
+                              value={fiscalRules.pfa.dividend_tax_rate ?? ''}
+                              placeholder="neconfigurat"
+                              onChange={(e) => updateFiscalField('pfa', 'dividend_tax_rate', parseFloat(e.target.value))}
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Câmp lipsă anterior din admin — folosit de calculatorul SRL/dividende din PFA și din Decision Maker (break-even). 10% din ianuarie 2025.</p>
                           </div>
                         </div>
                       </div>

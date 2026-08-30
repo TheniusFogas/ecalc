@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { POPULAR_SALARY_AMOUNTS } from '@/lib/salary-seo-amounts';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -54,6 +55,9 @@ export default function Footer() {
           <nav aria-label="Linkuri legale">
             <h3 className="font-bold text-slate-900 mb-3">Legal</h3>
             <div className="space-y-1.5">
+              <Link href="/despre" className="block text-slate-600 hover:text-blue-700 text-xs font-medium">
+                Despre eCalc.ro
+              </Link>
               <Link href="/termeni-conditii" className="block text-slate-600 hover:text-blue-700 text-xs font-medium">
                 Termeni și Condiții
               </Link>
@@ -74,6 +78,37 @@ export default function Footer() {
             </div>
           </nav>
         </div>
+        {/*
+          FIX (audit 2026-08-11, direcție de produs): listă curatoriată de "exemple de calcul"
+          — pattern folosit și de concurență (ex. calculator-salarii.ro). Trag din aceeași
+          POPULAR_SALARY_AMOUNTS folosită de sitemap.ts, deci fiecare link de aici duce la o
+          pagină chiar pre-randată, cu conținut/cifre reale — nu la o pagină inventată din mers.
+        */}
+        <nav aria-label="Exemple de calcul salariu" className="pt-4 pb-2 border-t border-slate-100">
+          <h3 className="font-bold text-slate-900 mb-3 text-sm">Exemple de Calcul Salariu {currentYear}</h3>
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+            {POPULAR_SALARY_AMOUNTS.map((amount) => (
+              <Link
+                key={`brut-${amount}`}
+                href={`/calculator-salarii-pro/${currentYear}/${amount}-brut-lei`}
+                className="text-slate-500 hover:text-blue-700 text-[11px] font-medium whitespace-nowrap"
+              >
+                {amount} RON brut
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-1.5">
+            {POPULAR_SALARY_AMOUNTS.map((amount) => (
+              <Link
+                key={`net-${amount}`}
+                href={`/calculator-salarii-pro/${currentYear}/${amount}-net-lei`}
+                className="text-slate-500 hover:text-blue-700 text-[11px] font-medium whitespace-nowrap"
+              >
+                {amount} RON net
+              </Link>
+            ))}
+          </div>
+        </nav>
         <div className="text-center pt-4 border-t border-slate-100">
           <p className="text-slate-600 text-xs font-medium">© {currentYear} eCalc.ro - Toate drepturile rezervate</p>
         </div>

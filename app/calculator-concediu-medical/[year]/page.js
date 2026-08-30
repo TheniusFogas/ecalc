@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { MedicalLeaveCalculator, SICK_CODES, generateSalaryHistory } from '@/lib/medical-leave-calculator';
+import { MedicalLeaveCalculator, SICK_CODES } from '@/lib/medical-leave-calculator';
 import { generateGenericPDF } from '@/lib/pdf-export';
 import NavigationHeader from '@/components/NavigationHeader';
 import Footer from '@/components/Footer';

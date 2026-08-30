@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { CITIES_ROMANIA } from '../lib/cities-data'
 import { MOUNTAIN_RESORTS_ZONES, ALL_COASTAL_RESORTS, ROMANIAN_MOUNTAIN_PEAKS } from '../lib/resorts-data'
 import { ROMANIA_COUNTIES } from '../lib/counties-data'
+import { POPULAR_SALARY_AMOUNTS } from '../lib/salary-seo-amounts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ecalc.ro'
@@ -33,12 +34,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 
   // 2. SALARII - Generare PROGRAMATICĂ a link-urilor (Masiv)
-  const allSalaryValues = [1000, 3700, 4050, 4325, 4850, 5000, 5500, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000]
+  // FIX (audit 2026-08-11): the old slugs were `salariu-brut-{val}-lei` — but parseSlug() in
+  // [slug]/page.js requires the slug to START with digits to extract an amount. "salariu-..."
+  // never matched, so all 90 of these URLs silently fell back to the SAME "salariu minim"
+  // content and title, submitted to Google as 90 near-identical pages. New format
+  // (`{val}-brut-lei` / `{val}-net-lei`) actually matches the parser, so each URL renders its
+  // own amount, its own title, its own numbers.
+  const allSalaryValues = POPULAR_SALARY_AMOUNTS
 
   const salaryPages = years.flatMap(year =>
     allSalaryValues.flatMap(val => [
-      { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-brut-${val}-lei`, lastModified: new Date() },
-      { url: `${baseUrl}/calculator-salarii-pro/${year}/salariu-net-${val}-lei`, lastModified: new Date() }
+      { url: `${baseUrl}/calculator-salarii-pro/${year}/${val}-brut-lei`, lastModified: new Date() },
+      { url: `${baseUrl}/calculator-salarii-pro/${year}/${val}-net-lei`, lastModified: new Date() }
     ])
   )
 

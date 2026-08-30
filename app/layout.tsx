@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { Metadata } from 'next';
+import ChatFloat from '@/components/ChatFloat';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -41,16 +42,18 @@ export default function RootLayout({
                                 price: '0',
                                 priceCurrency: 'RON',
                             },
-                            aggregateRating: {
-                                '@type': 'AggregateRating',
-                                ratingValue: '4.8',
-                                ratingCount: '1250',
-                            },
+                            // aggregateRating REMOVED (audit 2026-08-11): the 4.8/1250 values were
+                            // fabricated — no review system exists anywhere in the codebase. Fake
+                            // review/rating markup is a Google structured-data spam violation and
+                            // was already showing up in live search results. Re-add only once a
+                            // real review collection mechanism exists, sourced from actual data.
                         }),
                     }}
                 />
                 {children}
                 <Toaster />
+                {/* FIX (audit 2026-08-11): built, tested, never mounted anywhere — quick win. */}
+                <ChatFloat />
             </body>
         </html>
     );
